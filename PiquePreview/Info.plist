@@ -4,6 +4,28 @@
 <dict>
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.microsoft.powershell-script</string>
+			<key>UTTypeDescription</key>
+			<string>PowerShell Script</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.script</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ps1</string>
+					<string>psm1</string>
+					<string>psd1</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>
@@ -18,6 +40,9 @@
 				<string>io.toml</string>
 				<string>com.apple.mobileconfig</string>
 				<string>com.apple.property-list</string>
+				<string>public.shell-script</string>
+				<string>public.zsh-script</string>
+				<string>com.microsoft.powershell-script</string>
 			</array>
 			<key>QLFileExtensions</key>
 			<array>
@@ -28,6 +53,11 @@
 				<string>xml</string>
 				<string>mobileconfig</string>
 				<string>plist</string>
+				<string>sh</string>
+				<string>bash</string>
+				<string>zsh</string>
+				<string>ps1</string>
+				<string>psm1</string>
 			</array>
 			<key>QLPreviewWidth</key>
 			<real>1024</real>

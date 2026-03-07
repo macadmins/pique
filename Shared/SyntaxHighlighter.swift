@@ -1,7 +1,7 @@
 import Foundation
 
 enum FileFormat {
-    case json, yaml, toml, xml, mobileconfig
+    case json, yaml, toml, xml, mobileconfig, shell, powershell
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
@@ -10,6 +10,8 @@ enum FileFormat {
         case "toml": self = .toml
         case "xml": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
+        case "sh", "bash", "zsh", "ksh", "dash": self = .shell
+        case "ps1", "psm1", "psd1": self = .powershell
         default: return nil
         }
     }
@@ -28,6 +30,8 @@ enum SyntaxHighlighter {
         case .yaml: tokens = tokenizeYAML(source)
         case .toml: tokens = tokenizeTOML(source)
         case .xml, .mobileconfig: tokens = tokenizeXML(source)
+        case .shell: tokens = tokenizeShell(source)
+        case .powershell: tokens = tokenizePowerShell(source)
         }
         return wrapHTML(renderTokens(tokens), dark: darkMode)
     }
@@ -115,13 +119,13 @@ enum SyntaxHighlighter {
         )
 
         static let dark = Theme(
-            bg: "#0f172a", cell: "#1e293b", sep: "#334155",
-            text: "#f1f5f9", key: "#cbd5e1", label: "#94a3b8", muted: "#64748b",
-            accent: "#818cf8", boolYes: "#34d399", boolNo: "#f87171",
-            scopeDevice: "#fb923c", scopeUser: "#60a5fa",
-            xmlKey: "#93c5fd", xmlString: "#fca5a5", xmlNumber: "#a5b4fc",
-            xmlBool: "#7dd3fc", xmlComment: "#64748b", xmlTag: "#93c5fd",
-            xmlAttrName: "#c4b5fd", xmlAttrValue: "#fca5a5"
+            bg: "#1c1c1e", cell: "#2c2c2e", sep: "#38383a",
+            text: "#f5f5f7", key: "#d1d1d6", label: "#98989d", muted: "#636366",
+            accent: "#bf5af2", boolYes: "#30d158", boolNo: "#ff453a",
+            scopeDevice: "#ff9f0a", scopeUser: "#0a84ff",
+            xmlKey: "#9cdcfe", xmlString: "#ce9178", xmlNumber: "#b5cea8",
+            xmlBool: "#569cd6", xmlComment: "#6a9955", xmlTag: "#569cd6",
+            xmlAttrName: "#c586c0", xmlAttrValue: "#ce9178"
         )
     }
 
@@ -461,6 +465,10 @@ enum SyntaxHighlighter {
         .attrValue { color: \(t.xmlString); }
         .plistKey  { color: \(t.xmlKey); font-weight: bold; }
         .plistValue { color: \(t.xmlString); font-weight: bold; }
+        .variable  { color: \(t.xmlTag); }
+        .keyword   { color: \(t.xmlBool); }
+        .operator  { color: \(t.xmlComment); }
+        .command   { color: \(t.xmlAttrName); }
         </style>
         </head>
         <body>\(body)</body>
@@ -472,7 +480,7 @@ enum SyntaxHighlighter {
 
     private struct Token {
         enum Kind: String {
-            case plain, key, string, number, bool, comment, tag, attrName, attrValue, punctuation, plistKey, plistValue
+            case plain, key, string, number, bool, comment, tag, attrName, attrValue, punctuation, plistKey, plistValue, variable, keyword, `operator`, command
         }
         let text: String
         let kind: Kind
@@ -534,6 +542,85 @@ enum SyntaxHighlighter {
             } else if let date = match[7] {
                 return [Token(text: date, kind: .attrValue)]
             } else if let num = match[8] {
+                return [Token(text: num, kind: .number)]
+            }
+            return nil
+        }
+    }
+
+    // MARK: - Shell Tokenizer
+
+    private static func tokenizeShell(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(?m)(#!\/[^\n]*)"# +                   // 1: shebang
+            #"|(#[^\n]*)"# +                          // 2: comment
+            #"|('(?:[^'\\]|\\.)*')"# +                // 3: single-quoted string
+            #"|("(?:[^"\\]|\\.)*")"# +                // 4: double-quoted string
+            #"|(`[^`]*`)"# +                          // 5: backtick string
+            #"|(\$\{[^}]*\}|\$[A-Za-z_]\w*|\$[0-9@?#!$*\-])"# + // 6: variable
+            #"|\b(if|then|else|elif|fi|for|while|do|done|case|esac|function|return|local|export|source|in|select|until)\b"# + // 7: keyword
+            #"|(\|\||&&|>>|>&|<<|<|>|;|\|)"# +       // 8: operator
+            #"|\b(-?\d+(?:\.\d+)?)\b"#                // 9: number
+        )
+        return tokenize(src, regex: regex) { match in
+            if let shebang = match[1] {
+                return [Token(text: shebang, kind: .comment)]
+            } else if let comment = match[2] {
+                return [Token(text: comment, kind: .comment)]
+            } else if let str = match[3] {
+                return [Token(text: str, kind: .string)]
+            } else if let str = match[4] {
+                return [Token(text: str, kind: .string)]
+            } else if let str = match[5] {
+                return [Token(text: str, kind: .string)]
+            } else if let v = match[6] {
+                return [Token(text: v, kind: .variable)]
+            } else if let kw = match[7] {
+                return [Token(text: kw, kind: .keyword)]
+            } else if let op = match[8] {
+                return [Token(text: op, kind: .operator)]
+            } else if let num = match[9] {
+                return [Token(text: num, kind: .number)]
+            }
+            return nil
+        }
+    }
+
+    // MARK: - PowerShell Tokenizer
+
+    private static func tokenizePowerShell(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(<#[\s\S]*?#>)"# +                     // 1: block comment
+            #"|(?m)(#[^\n]*)"# +                      // 2: line comment
+            #"|('(?:[^'\\]|\\.)*')"# +                // 3: single-quoted string
+            #"|("(?:[^"\\]|\\.)*")"# +                // 4: double-quoted string
+            #"|(\$env:[A-Za-z_]\w*|\$\{[^}]*\}|\$[A-Za-z_]\w*)"# + // 5: variable
+            #"|\b(if|else|elseif|foreach|for|while|do|switch|function|param|return|try|catch|finally|throw|begin|process|end)\b"# + // 6: keyword
+            #"|([A-Z][a-z]+-[A-Z]\w*)"# +             // 7: cmdlet (Verb-Noun)
+            #"|(-(?:eq|ne|gt|lt|ge|le|match|like|notmatch|notlike|contains|in|notin|replace|split|join|is|isnot|as|band|bor|bnot|bxor|shl|shr|and|or|not))\b"# + // 8: operator
+            #"|(\|\||&&|;|\|)"# +                     // 9: pipe/logical operator
+            #"|\b(-?\d+(?:\.\d+)?)\b"#                // 10: number
+        )
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] {
+                return [Token(text: comment, kind: .comment)]
+            } else if let comment = match[2] {
+                return [Token(text: comment, kind: .comment)]
+            } else if let str = match[3] {
+                return [Token(text: str, kind: .string)]
+            } else if let str = match[4] {
+                return [Token(text: str, kind: .string)]
+            } else if let v = match[5] {
+                return [Token(text: v, kind: .variable)]
+            } else if let kw = match[6] {
+                return [Token(text: kw, kind: .keyword)]
+            } else if let cmd = match[7] {
+                return [Token(text: cmd, kind: .command)]
+            } else if let op = match[8] {
+                return [Token(text: op, kind: .operator)]
+            } else if let op = match[9] {
+                return [Token(text: op, kind: .operator)]
+            } else if let num = match[10] {
                 return [Token(text: num, kind: .number)]
             }
             return nil
@@ -668,21 +755,25 @@ enum SyntaxHighlighter {
     }
 
     private static func wrapHTML(_ body: String, dark: Bool) -> String {
-        let bg = dark ? "#0f172a" : "#ffffff"
-        let fg = dark ? "#e2e8f0" : "#1d1d1f"
+        let bg = dark ? "#1c1c1e" : "#ffffff"
+        let fg = dark ? "#f5f5f7" : "#1d1d1f"
         let colors: String
         if dark {
             colors = """
-            .key       { color: #93c5fd; }
-            .string    { color: #fca5a5; }
-            .number    { color: #a5b4fc; }
-            .bool      { color: #7dd3fc; }
-            .comment   { color: #64748b; font-style: italic; }
-            .tag       { color: #93c5fd; }
-            .attrName  { color: #c4b5fd; }
-            .attrValue { color: #fca5a5; }
-            .plistKey  { color: #93c5fd; font-weight: bold; }
-            .plistValue { color: #fca5a5; font-weight: bold; }
+            .key       { color: #9cdcfe; }
+            .string    { color: #ce9178; }
+            .number    { color: #b5cea8; }
+            .bool      { color: #569cd6; }
+            .comment   { color: #6a9955; font-style: italic; }
+            .tag       { color: #569cd6; }
+            .attrName  { color: #c586c0; }
+            .attrValue { color: #ce9178; }
+            .plistKey  { color: #9cdcfe; font-weight: bold; }
+            .plistValue { color: #ce9178; font-weight: bold; }
+            .variable  { color: #d19a66; }
+            .keyword   { color: #c586c0; }
+            .operator  { color: #abb2bf; }
+            .command   { color: #61afef; }
             """
         } else {
             colors = """
@@ -696,6 +787,10 @@ enum SyntaxHighlighter {
             .attrValue { color: #0451a5; }
             .plistKey  { color: #0451a5; font-weight: bold; }
             .plistValue { color: #a31515; font-weight: bold; }
+            .variable  { color: #e06c20; }
+            .keyword   { color: #af00db; }
+            .operator  { color: #383a42; }
+            .command   { color: #4078f2; }
             """
         }
         return """

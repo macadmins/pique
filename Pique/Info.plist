@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.microsoft.powershell-script</string>
+			<key>UTTypeDescription</key>
+			<string>PowerShell Script</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.script</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ps1</string>
+					<string>psm1</string>
+					<string>psd1</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

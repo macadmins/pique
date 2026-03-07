@@ -36,7 +36,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             logger.info("Preview for \(url.lastPathComponent, privacy: .public)")
 
             guard let htmlData = html.data(using: .utf8),
-                  let attrString = try? NSAttributedString(
+                  let attrString = NSAttributedString(
                       html: htmlData,
                       documentAttributes: nil
                   ) else {
@@ -47,7 +47,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             if let scrollView = view as? NSScrollView,
                let textView = scrollView.documentView as? NSTextView {
                 textView.textStorage?.setAttributedString(attrString)
-                let bg: NSColor = isDark ? NSColor(red: 0.059, green: 0.090, blue: 0.165, alpha: 1) : .white
+                let bg: NSColor = isDark ? NSColor(red: 0.110, green: 0.110, blue: 0.118, alpha: 1) : .white
                 textView.backgroundColor = bg
                 scrollView.backgroundColor = bg
             }
