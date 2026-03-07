@@ -46,7 +46,7 @@ Go to **System Settings > Login Items & Extensions > Quick Look Extensions** and
 
 ## License
 
-Copyright 2025 Declarative IT GmbH
+Copyright 2026 Declarative IT GmbH
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
