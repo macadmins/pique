@@ -16,6 +16,12 @@
 		A200000000000006 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000008 /* SyntaxHighlighter.swift */; };
 		A200000000000008 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000009 /* FileReader.swift */; };
 		A300000000000001 /* PiquePreview.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D200000000000002 /* PiquePreview.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A400000000000001 /* FileFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000001 /* FileFormatTests.swift */; };
+		A400000000000002 /* FileReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000002 /* FileReaderTests.swift */; };
+		A400000000000003 /* ProfileDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000003 /* ProfileDetectionTests.swift */; };
+		A400000000000004 /* FormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000004 /* FormattingTests.swift */; };
+		A400000000000005 /* HTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000005 /* HTMLTests.swift */; };
+		A400000000000006 /* HighlightIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000006 /* HighlightIntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +31,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = B200000000000001;
 			remoteInfo = PiquePreview;
+		};
+		C100000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B100000000000001;
+			remoteInfo = Pique;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -54,9 +67,23 @@
 		D100000000000009 /* FileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReader.swift; sourceTree = "<group>"; };
 		D200000000000001 /* Pique.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pique.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D200000000000002 /* PiquePreview.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PiquePreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D200000000000003 /* PiqueTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PiqueTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D300000000000001 /* FileFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileFormatTests.swift; sourceTree = "<group>"; };
+		D300000000000002 /* FileReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReaderTests.swift; sourceTree = "<group>"; };
+		D300000000000003 /* ProfileDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDetectionTests.swift; sourceTree = "<group>"; };
+		D300000000000004 /* FormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattingTests.swift; sourceTree = "<group>"; };
+		D300000000000005 /* HTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLTests.swift; sourceTree = "<group>"; };
+		D300000000000006 /* HighlightIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightIntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F200000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F200000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -80,6 +107,7 @@
 				G000000000000002 /* Pique */,
 				G000000000000003 /* PiquePreview */,
 				G000000000000004 /* Shared */,
+				G000000000000006 /* PiqueTests */,
 				G000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -114,11 +142,25 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		G000000000000006 /* PiqueTests */ = {
+			isa = PBXGroup;
+			children = (
+				D300000000000001 /* FileFormatTests.swift */,
+				D300000000000002 /* FileReaderTests.swift */,
+				D300000000000003 /* ProfileDetectionTests.swift */,
+				D300000000000004 /* FormattingTests.swift */,
+				D300000000000005 /* HTMLTests.swift */,
+				D300000000000006 /* HighlightIntegrationTests.swift */,
+			);
+			path = PiqueTests;
+			sourceTree = "<group>";
+		};
 		G000000000000005 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				D200000000000001 /* Pique.app */,
 				D200000000000002 /* PiquePreview.appex */,
+				D200000000000003 /* PiqueTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,6 +204,24 @@
 			productReference = D200000000000002 /* PiquePreview.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		B300000000000001 /* PiqueTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = X300000000000001 /* Build configuration list for PBXNativeTarget "PiqueTests" */;
+			buildPhases = (
+				S300000000000001 /* Sources */,
+				F200000000000003 /* Frameworks */,
+				R300000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C200000000000002 /* PBXTargetDependency */,
+			);
+			name = PiqueTests;
+			productName = PiqueTests;
+			productReference = D200000000000003 /* PiqueTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -177,6 +237,10 @@
 					};
 					B200000000000001 = {
 						CreatedOnToolsVersion = 15.4;
+					};
+					B300000000000001 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = B100000000000001;
 					};
 				};
 			};
@@ -195,6 +259,7 @@
 			targets = (
 				B100000000000001 /* Pique */,
 				B200000000000001 /* PiquePreview */,
+				B300000000000001 /* PiqueTests */,
 			);
 		};
 /* End PBXProject section */
@@ -209,6 +274,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		R200000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		R300000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -239,6 +311,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		S300000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A400000000000001 /* FileFormatTests.swift in Sources */,
+				A400000000000002 /* FileReaderTests.swift in Sources */,
+				A400000000000003 /* ProfileDetectionTests.swift in Sources */,
+				A400000000000004 /* FormattingTests.swift in Sources */,
+				A400000000000005 /* HTMLTests.swift in Sources */,
+				A400000000000006 /* HighlightIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -246,6 +331,11 @@
 			isa = PBXTargetDependency;
 			target = B200000000000001 /* PiquePreview */;
 			targetProxy = C100000000000001 /* PBXContainerItemProxy */;
+		};
+		C200000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B100000000000001 /* Pique */;
+			targetProxy = C100000000000002 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -379,7 +469,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = D6G4X4D7C9;
@@ -427,7 +517,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = D6G4X4D7C9;
@@ -472,7 +562,7 @@
 				CODE_SIGN_ENTITLEMENTS = PiquePreview/PiquePreview.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = D6G4X4D7C9;
@@ -503,7 +593,7 @@
 				CODE_SIGN_ENTITLEMENTS = PiquePreview/PiquePreview.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = D6G4X4D7C9;
@@ -523,6 +613,42 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		CF300000000000AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 13;
+				DEAD_CODE_STRIPPING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1.0b2;
+				PRODUCT_BUNDLE_IDENTIFIER = io.declarative.pique.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Pique.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Pique";
+			};
+			name = Debug;
+		};
+		CF300000000000AR /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 13;
+				DEAD_CODE_STRIPPING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1.0b2;
+				PRODUCT_BUNDLE_IDENTIFIER = io.declarative.pique.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Pique.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Pique";
 			};
 			name = Release;
 		};
@@ -552,6 +678,15 @@
 			buildConfigurations = (
 				CF200000000000AD /* Debug */,
 				CF200000000000AR /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		X300000000000001 /* Build configuration list for PBXNativeTarget "PiqueTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF300000000000AD /* Debug */,
+				CF300000000000AR /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

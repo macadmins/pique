@@ -76,7 +76,7 @@ enum SyntaxHighlighter {
 
     /// Extract effective settings, flattening ManagedClient.preferences nesting
     /// and handling DDM declaration "Payload" key
-    private static func extractSettings(_ payload: [String: Any]) -> [String: Any] {
+    static func extractSettings(_ payload: [String: Any]) -> [String: Any] {
         // DDM declaration: settings live under "Payload"
         if payload["Type"] as? String != nil,
            let ddmPayload = payload["Payload"] as? [String: Any] {
@@ -99,7 +99,7 @@ enum SyntaxHighlighter {
     }
 
     /// Check if a value is simple (renders inline) vs complex (needs its own block)
-    private static func isSimple(_ value: Any) -> Bool {
+    static func isSimple(_ value: Any) -> Bool {
         switch value {
         case is Bool, is NSNumber: return true
         case let s as String: return s.count < 120
@@ -110,7 +110,7 @@ enum SyntaxHighlighter {
     }
 
     /// Check if a string value is "long" (should span full width)
-    private static func isLongString(_ value: Any) -> Bool {
+    static func isLongString(_ value: Any) -> Bool {
         if let s = value as? String { return s.count > 60 }
         return false
     }
@@ -268,7 +268,7 @@ enum SyntaxHighlighter {
     // MARK: - JSON Profile Detection & Renderer
 
     /// Check if a JSON dictionary looks like an Apple configuration profile
-    private static func isAppleConfigProfile(_ json: [String: Any]) -> Bool {
+    static func isAppleConfigProfile(_ json: [String: Any]) -> Bool {
         // Top-level "Type": "com.apple.*"
         if let type = json["Type"] as? String, type.hasPrefix("com.apple.") {
             return true
@@ -459,14 +459,14 @@ enum SyntaxHighlighter {
     ]
 
     /// Heuristic: does this key name suggest a time/duration value?
-    private static func isTimeKey(_ key: String) -> Bool {
+    static func isTimeKey(_ key: String) -> Bool {
         let lower = key.lowercased()
         let timeWords = ["time", "cycle", "delay", "interval", "timeout", "duration", "period", "refresh", "expir"]
         return timeWords.contains { lower.contains($0) }
     }
 
     /// Format seconds into "Xd Xh Xm Xs"
-    private static func formatDuration(seconds: Int) -> String {
+    static func formatDuration(seconds: Int) -> String {
         if seconds == 0 { return "0s" }
         let d = seconds / 86400
         let h = (seconds % 86400) / 3600
@@ -481,7 +481,7 @@ enum SyntaxHighlighter {
     }
 
     /// Format hours into "Xd Xh"
-    private static func formatHours(_ hours: Int) -> String {
+    static func formatHours(_ hours: Int) -> String {
         if hours == 0 { return "0h" }
         let d = hours / 24
         let h = hours % 24
@@ -1019,7 +1019,7 @@ enum SyntaxHighlighter {
     }
 
     /// Process inline markdown: **bold**, *italic*, `code`, [links](url)
-    private static func inlineMarkdown(_ text: String) -> String {
+    static func inlineMarkdown(_ text: String) -> String {
         var result = text
         // Bold
         result = result.replacingOccurrences(of: #"\*\*(.+?)\*\*"#, with: "<strong>$1</strong>", options: .regularExpression)
@@ -1238,7 +1238,7 @@ enum SyntaxHighlighter {
         }.joined()
     }
 
-    private static func escapeHTML(_ text: String) -> String {
+    static func escapeHTML(_ text: String) -> String {
         text.replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
