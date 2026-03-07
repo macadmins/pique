@@ -6,18 +6,23 @@
 import Foundation
 
 enum FileFormat {
-    case json, yaml, toml, xml, mobileconfig, shell, powershell, python
+    case json, yaml, toml, xml, mobileconfig, shell, powershell, python, ruby, go, rust, javascript, markdown
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
         case "json": self = .json
         case "yaml", "yml": self = .yaml
-        case "toml": self = .toml
+        case "toml", "lock": self = .toml
         case "xml": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
         case "sh", "bash", "zsh", "ksh", "dash", "rc": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell
-        case "py", "pyw": self = .python
+        case "py", "pyw", "pyi": self = .python
+        case "rb", "gemspec", "rakefile": self = .ruby
+        case "go": self = .go
+        case "rs": self = .rust
+        case "js", "jsx", "ts", "tsx", "mjs", "cjs": self = .javascript
+        case "md", "markdown", "adoc": self = .markdown
         default: return nil
         }
     }
@@ -46,6 +51,11 @@ enum SyntaxHighlighter {
         case .shell: tokens = tokenizeShell(source)
         case .powershell: tokens = tokenizePowerShell(source)
         case .python: tokens = tokenizePython(source)
+        case .ruby: tokens = tokenizeRuby(source)
+        case .go: tokens = tokenizeGo(source)
+        case .rust: tokens = tokenizeRust(source)
+        case .javascript: tokens = tokenizeJavaScript(source)
+        case .markdown: return renderMarkdown(source, dark: darkMode)
         }
         return wrapHTML(renderTokens(tokens), dark: darkMode)
     }
@@ -905,6 +915,205 @@ enum SyntaxHighlighter {
             } else if let num = match[8] {
                 return [Token(text: num, kind: .number)]
             }
+            return nil
+        }
+    }
+
+    // MARK: - JavaScript/TypeScript Tokenizer
+
+    private static func tokenizeJavaScript(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(//[^\n]*|/\*[\s\S]*?\*/)"# +               // 1: comment
+            #"|(`(?:[^`\\]|\\.)*`)"# +                     // 2: template literal
+            #"|(\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*')"# + // 3: string
+            #"|(/(?:[^/\\]|\\.)+/[gimsuy]*)"# +            // 4: regex
+            #"|\b(const|let|var|function|return|if|else|for|while|do|switch|case|default|break|continue|class|extends|new|this|super|import|export|from|as|async|await|yield|try|catch|finally|throw|typeof|instanceof|in|of|void|delete|interface|type|enum|namespace|declare|abstract|implements|readonly|keyof|infer|never|unknown)\b"# + // 5: keyword
+            #"|\b(true|false|null|undefined|NaN|Infinity)\b"# + // 6: bool/literal
+            #"|(=>|===|!==|==|!=|<=|>=|&&|\|\||\?\?|\?\.|\.\.\.|\*\*|<<|>>|>>>)"# + // 7: operator
+            #"|\b(0x[0-9a-fA-F_]+|0o[0-7_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:e[+-]?\d+)?n?)\b"# // 8: number
+        ).dotMatchesNewlines()
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] { return [Token(text: comment, kind: .comment)] }
+            else if let str = match[2] { return [Token(text: str, kind: .string)] }
+            else if let str = match[3] { return [Token(text: str, kind: .string)] }
+            else if let re = match[4] { return [Token(text: re, kind: .string)] }
+            else if let kw = match[5] { return [Token(text: kw, kind: .keyword)] }
+            else if let b = match[6] { return [Token(text: b, kind: .bool)] }
+            else if let op = match[7] { return [Token(text: op, kind: .operator)] }
+            else if let num = match[8] { return [Token(text: num, kind: .number)] }
+            return nil
+        }
+    }
+
+    // MARK: - Markdown Renderer
+
+    private static func renderMarkdown(_ source: String, dark: Bool) -> String {
+        let bg = dark ? "#1c1c1e" : "#ffffff"
+        let fg = dark ? "#f5f5f7" : "#1d1d1f"
+        let muted = dark ? "#98989d" : "#6e6e73"
+        let accent = dark ? "#bf5af2" : "#6366f1"
+        let codeBg = dark ? "#2c2c2e" : "#f4f4f5"
+        let border = dark ? "#38383a" : "#e2e8f0"
+        let link = dark ? "#0a84ff" : "#2563eb"
+
+        var html = ""
+        let lines = source.components(separatedBy: "\n")
+        var inCodeBlock = false
+        var codeBuffer = ""
+
+        for line in lines {
+            if line.hasPrefix("```") {
+                if inCodeBlock {
+                    html += "<pre style=\"background:\(codeBg); padding:12px 16px; border-radius:6px; overflow-x:auto; font:12px/1.6 Menlo,monospace;\">\(escapeHTML(codeBuffer))</pre>"
+                    codeBuffer = ""
+                    inCodeBlock = false
+                } else {
+                    inCodeBlock = true
+                }
+                continue
+            }
+            if inCodeBlock {
+                codeBuffer += (codeBuffer.isEmpty ? "" : "\n") + line
+                continue
+            }
+
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty {
+                html += "<br>"
+            } else if trimmed.hasPrefix("# ") {
+                html += "<h1 style=\"font-size:28px; margin:24px 0 8px 0; border-bottom:1px solid \(border); padding-bottom:8px;\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(2)))))</h1>"
+            } else if trimmed.hasPrefix("## ") {
+                html += "<h2 style=\"font-size:22px; margin:20px 0 6px 0; border-bottom:1px solid \(border); padding-bottom:6px;\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(3)))))</h2>"
+            } else if trimmed.hasPrefix("### ") {
+                html += "<h3 style=\"font-size:18px; margin:16px 0 4px 0;\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(4)))))</h3>"
+            } else if trimmed.hasPrefix("#### ") {
+                html += "<h4 style=\"font-size:15px; margin:12px 0 4px 0; color:\(muted);\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(5)))))</h4>"
+            } else if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") {
+                html += "<p style=\"margin:2px 0 2px 20px;\">&bull; \(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(2)))))</p>"
+            } else if trimmed.hasPrefix("> ") {
+                html += "<blockquote style=\"margin:8px 0; padding:4px 16px; border-left:3px solid \(accent); color:\(muted);\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(2)))))</blockquote>"
+            } else if trimmed.hasPrefix("---") || trimmed.hasPrefix("***") || trimmed.hasPrefix("___") {
+                html += "<hr style=\"border:none; border-top:1px solid \(border); margin:16px 0;\">"
+            } else if let _ = trimmed.range(of: #"^\d+\.\s"#, options: .regularExpression) {
+                let content = trimmed.replacingOccurrences(of: #"^\d+\.\s"#, with: "", options: .regularExpression)
+                html += "<p style=\"margin:2px 0 2px 20px;\">\(inlineMarkdown(escapeHTML(content)))</p>"
+            } else {
+                html += "<p style=\"margin:4px 0;\">\(inlineMarkdown(escapeHTML(trimmed)))</p>"
+            }
+        }
+
+        if inCodeBlock {
+            html += "<pre style=\"background:\(codeBg); padding:12px 16px; border-radius:6px; font:12px/1.6 Menlo,monospace;\">\(escapeHTML(codeBuffer))</pre>"
+        }
+
+        return """
+        <!DOCTYPE html>
+        <html><head><meta charset="utf-8">
+        <style>
+        body { font: 14px/1.7 -apple-system, Helvetica, sans-serif; margin: 0; padding: 20px 24px; background: \(bg); color: \(fg); }
+        code { background: \(codeBg); padding: 2px 5px; border-radius: 3px; font: 12px Menlo, monospace; }
+        a { color: \(link); text-decoration: none; }
+        </style></head>
+        <body>\(html)</body></html>
+        """
+    }
+
+    /// Process inline markdown: **bold**, *italic*, `code`, [links](url)
+    private static func inlineMarkdown(_ text: String) -> String {
+        var result = text
+        // Bold
+        result = result.replacingOccurrences(of: #"\*\*(.+?)\*\*"#, with: "<strong>$1</strong>", options: .regularExpression)
+        result = result.replacingOccurrences(of: #"__(.+?)__"#, with: "<strong>$1</strong>", options: .regularExpression)
+        // Italic
+        result = result.replacingOccurrences(of: #"\*(.+?)\*"#, with: "<em>$1</em>", options: .regularExpression)
+        result = result.replacingOccurrences(of: #"_(.+?)_"#, with: "<em>$1</em>", options: .regularExpression)
+        // Code
+        result = result.replacingOccurrences(of: #"`([^`]+)`"#, with: "<code>$1</code>", options: .regularExpression)
+        // Links
+        result = result.replacingOccurrences(of: #"\[([^\]]+)\]\(([^)]+)\)"#, with: "<a href=\"$2\">$1</a>", options: .regularExpression)
+        return result
+    }
+
+    // MARK: - Ruby Tokenizer
+
+    private static func tokenizeRuby(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(=begin[\s\S]*?=end)"# +                    // 1: block comment
+            #"|(?m)(#[^\n]*)"# +                           // 2: line comment
+            #"|(\"\"\"[\s\S]*?\"\"\"|'[^']*'|\"(?:[^\"\\]|\\.)*\")"# + // 3: string
+            #"|(/(?:[^/\\]|\\.)+/[imxo]*)"# +              // 4: regex
+            #"|(@{1,2}[A-Za-z_]\w*)"# +                    // 5: instance/class var
+            #"|(\$[A-Za-z_]\w*|\$[0-9!@&+`'=~/\\,;.<>*$?:\"])"# + // 6: global var
+            #"|(:[A-Za-z_]\w*[!?]?)"# +                    // 7: symbol
+            #"|\b(def|class|module|end|if|elsif|else|unless|case|when|while|until|for|do|begin|rescue|ensure|raise|return|yield|block_given\?|require|require_relative|include|extend|attr_accessor|attr_reader|attr_writer|self|super|nil|true|false|and|or|not|in|then|puts|print|lambda|proc)\b"# + // 8: keyword
+            #"|(<=>|=>|&&|\|\||<<|>>|[!=<>]=|[-+*/%&|^~<>]=?|\.\.\.|\.\.)"# + // 9: operator
+            #"|\b(\d+(?:\.\d+)?(?:e[+-]?\d+)?|0x[0-9a-fA-F]+|0b[01]+|0o[0-7]+)\b"# // 10: number
+        ).dotMatchesNewlines()
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] { return [Token(text: comment, kind: .comment)] }
+            else if let comment = match[2] { return [Token(text: comment, kind: .comment)] }
+            else if let str = match[3] { return [Token(text: str, kind: .string)] }
+            else if let re = match[4] { return [Token(text: re, kind: .string)] }
+            else if let v = match[5] { return [Token(text: v, kind: .variable)] }
+            else if let v = match[6] { return [Token(text: v, kind: .variable)] }
+            else if let sym = match[7] { return [Token(text: sym, kind: .attrName)] }
+            else if let kw = match[8] {
+                return [Token(text: kw, kind: ["nil", "true", "false"].contains(kw) ? .bool : .keyword)]
+            }
+            else if let op = match[9] { return [Token(text: op, kind: .operator)] }
+            else if let num = match[10] { return [Token(text: num, kind: .number)] }
+            return nil
+        }
+    }
+
+    // MARK: - Go Tokenizer
+
+    private static func tokenizeGo(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(//[^\n]*|/\*[\s\S]*?\*/)"# +               // 1: comment
+            #"|(\"(?:[^\"\\]|\\.)*\"|`[^`]*`)"# +          // 2: string
+            #"|\b(package|import|func|return|var|const|type|struct|interface|map|chan|go|defer|if|else|for|range|switch|case|default|break|continue|fallthrough|select|make|new|append|len|cap|copy|delete|close|panic|recover|nil|true|false|iota)\b"# + // 3: keyword
+            #"|\b(int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|complex64|complex128|string|bool|byte|rune|error|any)\b"# + // 4: type
+            #"|(:=|<-|&&|\|\||<<|>>|[!=<>]=|[-+*/%&|^~<>]=?|\.\.\.)\"?"# + // 5: operator
+            #"|\b(0x[0-9a-fA-F_]+|0o[0-7_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:e[+-]?\d+)?)\b"# // 6: number
+        ).dotMatchesNewlines()
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] { return [Token(text: comment, kind: .comment)] }
+            else if let str = match[2] { return [Token(text: str, kind: .string)] }
+            else if let kw = match[3] {
+                return [Token(text: kw, kind: ["nil", "true", "false", "iota"].contains(kw) ? .bool : .keyword)]
+            }
+            else if let tp = match[4] { return [Token(text: tp, kind: .tag)] }
+            else if let op = match[5] { return [Token(text: op, kind: .operator)] }
+            else if let num = match[6] { return [Token(text: num, kind: .number)] }
+            return nil
+        }
+    }
+
+    // MARK: - Rust Tokenizer
+
+    private static func tokenizeRust(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(//[^\n]*|/\*[\s\S]*?\*/)"# +               // 1: comment
+            #"|(r"[^"]*"|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)')"# + // 2: string/char
+            ##"|(#\[[\w:()=, "]*\]|#!\[[\w:()=, "]*\])"## + // 3: attribute
+            #"|\b(fn|let|mut|const|static|struct|enum|impl|trait|type|pub|crate|mod|use|as|self|super|Self|if|else|match|for|while|loop|in|break|continue|return|where|async|await|move|unsafe|extern|ref|dyn|macro_rules)\b"# + // 4: keyword
+            #"|\b(i8|i16|i32|i64|i128|isize|u8|u16|u32|u64|u128|usize|f32|f64|bool|char|str|String|Vec|Option|Result|Box|Rc|Arc|Some|None|Ok|Err)\b"# + // 5: type
+            #"|\b(true|false)\b"# +                        // 6: bool
+            #"|(=>|->|&&|\|\||<<|>>|[!=<>]=|[-+*/%&|^~<>]=?|\.\.\.|\.\.=?)"# + // 7: operator
+            #"|\b(0x[0-9a-fA-F_]+|0o[0-7_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:e[+-]?\d+)?(?:_?(?:i|u|f)(?:8|16|32|64|128|size))?)\b"# // 8: number
+        ).dotMatchesNewlines()
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] { return [Token(text: comment, kind: .comment)] }
+            else if let str = match[2] { return [Token(text: str, kind: .string)] }
+            else if let attr = match[3] { return [Token(text: attr, kind: .attrName)] }
+            else if let kw = match[4] { return [Token(text: kw, kind: .keyword)] }
+            else if let tp = match[5] {
+                return [Token(text: tp, kind: ["Some", "None", "Ok", "Err"].contains(tp) ? .keyword : .tag)]
+            }
+            else if let b = match[6] { return [Token(text: b, kind: .bool)] }
+            else if let op = match[7] { return [Token(text: op, kind: .operator)] }
+            else if let num = match[8] { return [Token(text: num, kind: .number)] }
             return nil
         }
     }

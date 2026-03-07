@@ -25,6 +25,41 @@
 				</array>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>io.declarative.typescript</string>
+			<key>UTTypeDescription</key>
+			<string>TypeScript Source</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.source-code</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ts</string>
+					<string>tsx</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>io.declarative.asciidoc</string>
+			<key>UTTypeDescription</key>
+			<string>AsciiDoc Document</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>adoc</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 	<key>NSExtension</key>
 	<dict>
@@ -44,6 +79,15 @@
 				<string>public.zsh-script</string>
 				<string>com.microsoft.powershell-script</string>
 				<string>public.python-script</string>
+				<string>public.ruby-script</string>
+				<string>org.golang.go-source</string>
+				<string>org.rust-lang.rust-source</string>
+				<string>com.netscape.javascript-source</string>
+				<string>public.javascript-source</string>
+				<string>com.apple.dt.typescript</string>
+				<string>io.declarative.typescript</string>
+				<string>io.declarative.asciidoc</string>
+				<string>net.daringfireball.markdown</string>
 			</array>
 			<key>QLFileExtensions</key>
 			<array>
@@ -51,6 +95,7 @@
 				<string>yaml</string>
 				<string>yml</string>
 				<string>toml</string>
+				<string>lock</string>
 				<string>xml</string>
 				<string>mobileconfig</string>
 				<string>plist</string>
@@ -62,6 +107,18 @@
 				<string>psm1</string>
 				<string>py</string>
 				<string>pyw</string>
+				<string>pyi</string>
+				<string>rb</string>
+				<string>go</string>
+				<string>rs</string>
+				<string>js</string>
+				<string>jsx</string>
+				<string>ts</string>
+				<string>d.ts</string>
+				<string>tsx</string>
+				<string>md</string>
+				<string>markdown</string>
+				<string>adoc</string>
 			</array>
 			<key>QLPreviewWidth</key>
 			<real>1024</real>
