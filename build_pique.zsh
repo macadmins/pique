@@ -95,8 +95,18 @@ if [ -e $PKG_PATH ]; then
   /bin/rm -rf $PKG_PATH
 fi
 /bin/mkdir -p "$PKG_PATH/payload"
+/bin/mkdir -p "$PKG_PATH/scripts"
 /usr/bin/sudo /usr/sbin/chown -R ${CONSOLEUSER}:wheel "$PKG_PATH"
 /bin/cp -R "$BUILDSDIR/DerivedData/Build/Products/Release/Pique.app" "$PKG_PATH/payload/Pique.app"
+
+# Create postinstall script to register the QuickLook extension
+/bin/cat << 'POSTINSTALL' > "$PKG_PATH/scripts/postinstall"
+#!/bin/zsh
+# Register the QuickLook preview extension
+/usr/bin/pluginkit -a /Applications/Pique.app/Contents/PlugIns/PiquePreview.appex
+exit 0
+POSTINSTALL
+/bin/chmod a+x "$PKG_PATH/scripts/postinstall"
 
 # Create the json file for signed munkipkg Pique pkg
 /bin/cat << SIGNED_JSONFILE > "$PKG_PATH/build-info.json"

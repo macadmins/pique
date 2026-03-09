@@ -576,6 +576,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 0.1.0b2;
 				MERGED_BINARY_TYPE = none;
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique.PiquePreview;
@@ -607,6 +608,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 0.1.0b2;
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique.PiquePreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
