@@ -14,6 +14,7 @@ struct ContentView: View {
         ("mobileconfig", "lock.doc", Color.red),
         ("Shell", "terminal", Color.mint),
         ("Python", "chevron.left.forwardslash.chevron.right", Color.cyan),
+        ("HCL", "doc.text", Color.indigo),
     ]
 
     var body: some View {
@@ -45,7 +46,7 @@ struct ContentView: View {
                 .padding(.top, 4)
         }
         .padding(48)
-        .frame(minWidth: 500, minHeight: 300)
+        .frame(minWidth: 700, minHeight: 300)
     }
 }
 

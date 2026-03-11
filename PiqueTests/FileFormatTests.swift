@@ -72,6 +72,12 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "adoc"), .markdown)
     }
 
+    func testHCL() {
+        for ext in ["tf", "tfvars", "hcl"] {
+            XCTAssertEqual(FileFormat(pathExtension: ext), .hcl, "Expected .hcl for .\(ext)")
+        }
+    }
+
     // MARK: - Case insensitivity
 
     func testCaseInsensitive() {

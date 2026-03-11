@@ -305,4 +305,39 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains(#"<span class="variable">$stdout</span>"#))
         XCTAssertTrue(html.contains(#"<span class="attrName">:hello</span>"#))
     }
+
+    // MARK: - HCL / Terraform
+
+    func testHCLResourceBlock() {
+        let hcl = #"resource "aws_instance" "web" {\n  ami = "abc-123"\n}"#
+        let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
+        XCTAssertTrue(html.contains(#"<span class="keyword">resource</span>"#))
+        XCTAssertTrue(html.contains(#"class="string""#))
+    }
+
+    func testHCLKeyValueAssignment() {
+        let hcl = "instance_type = \"t3.micro\""
+        let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
+        XCTAssertTrue(html.contains(#"<span class="key">instance_type</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="string">&quot;t3.micro&quot;</span>"#))
+    }
+
+    func testHCLComments() {
+        let hcl = "# This is a comment\n// Another comment\n/* block */"
+        let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
+        XCTAssertEqual(count(of: #"class="comment""#, in: html), 3)
+    }
+
+    func testHCLBoolAndNumber() {
+        let hcl = "enabled = true\ncount = 3"
+        let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
+        XCTAssertTrue(html.contains(#"<span class="bool">true</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="number">3</span>"#))
+    }
+
+    func testHCLInterpolation() {
+        let hcl = #"name = "${var.prefix}-web""#
+        let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
+        XCTAssertTrue(html.contains(#"class="string""#))
+    }
 }
