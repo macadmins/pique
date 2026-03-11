@@ -14,7 +14,7 @@ enum FileFormat {
         case "json": self = .json
         case "yaml", "yml": self = .yaml
         case "toml", "lock": self = .toml
-        case "xml": self = .xml
+        case "xml", "recipe": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
         case "sh", "bash", "zsh", "ksh", "dash", "rc": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell

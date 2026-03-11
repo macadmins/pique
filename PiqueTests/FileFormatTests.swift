@@ -21,6 +21,7 @@ final class FileFormatTests: XCTestCase {
 
     func testXML() {
         XCTAssertEqual(FileFormat(pathExtension: "xml"), .xml)
+        XCTAssertEqual(FileFormat(pathExtension: "recipe"), .xml)
     }
 
     func testMobileconfig() {

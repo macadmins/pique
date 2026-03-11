@@ -79,6 +79,23 @@
 					</array>
 				</dict>
 			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.recipe</string>
+				<key>UTTypeDescription</key>
+				<string>AutoPkg Recipe</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.xml</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>recipe</string>
+					</array>
+				</dict>
+			</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -108,6 +125,7 @@
 					<string>io.macadmins.pique.asciidoc</string>
 					<string>net.daringfireball.markdown</string>
 					<string>io.macadmins.pique.hcl</string>
+					<string>io.macadmins.pique.recipe</string>
 				</array>
 				<key>QLFileExtensions</key>
 				<array>
@@ -142,6 +160,7 @@
 					<string>tf</string>
 					<string>tfvars</string>
 					<string>hcl</string>
+					<string>recipe</string>
 				</array>
 				<key>QLPreviewWidth</key>
 				<real>1024</real>
