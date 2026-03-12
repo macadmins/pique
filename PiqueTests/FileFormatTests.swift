@@ -30,7 +30,7 @@ final class FileFormatTests: XCTestCase {
     }
 
     func testShell() {
-        for ext in ["sh", "bash", "zsh", "ksh", "dash", "rc"] {
+        for ext in ["sh", "bash", "zsh", "ksh", "dash", "rc", "command"] {
             XCTAssertEqual(FileFormat(pathExtension: ext), .shell, "Expected .shell for .\(ext)")
         }
     }
