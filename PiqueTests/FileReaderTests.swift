@@ -89,4 +89,114 @@ final class FileReaderTests: XCTestCase {
         // Should not throw
         _ = try FileReader.read(url: file)
     }
+
+    // MARK: - readData
+
+    func testReadDataReturnsRawBytes() throws {
+        let file = tempDir.appendingPathComponent("raw.bin")
+        let bytes: [UInt8] = [0x00, 0x01, 0xFF, 0xFE, 0x42]
+        let data = Data(bytes)
+        try data.write(to: file)
+
+        let result = try FileReader.readData(url: file)
+        XCTAssertEqual(result, data)
+    }
+
+    func testReadDataTooLargeThrows() throws {
+        let file = tempDir.appendingPathComponent("large2.bin")
+        let size = Int(FileReader.maxFileSize) + 1
+        try Data(count: size).write(to: file)
+
+        XCTAssertThrowsError(try FileReader.readData(url: file)) { error in
+            guard case FileReader.FileReaderError.fileTooLarge = error else {
+                XCTFail("Expected fileTooLarge")
+                return
+            }
+        }
+    }
+
+    // MARK: - decodeToString
+
+    func testDecodeToStringUTF8() {
+        let text = "Hello, world! 🌍"
+        let data = text.data(using: .utf8)!
+        XCTAssertEqual(FileReader.decodeToString(data), text)
+    }
+
+    func testDecodeToStringLatin1Fallback() {
+        // 0xE9 is 'é' in Latin-1 but invalid as standalone UTF-8
+        let data = Data([0x63, 0x61, 0x66, 0xE9]) // "café"
+        let result = FileReader.decodeToString(data)
+        XCTAssertEqual(result, "café")
+    }
+
+    // MARK: - Binary plist
+
+    func testIsBinaryPlistDetectsHeader() {
+        let bplist = Data([0x62, 0x70, 0x6c, 0x69, 0x73, 0x74, 0x30, 0x30])
+        XCTAssertTrue(FileReader.isBinaryPlist(bplist))
+
+        let xml = "<?xml version=\"1.0\"".data(using: .utf8)!
+        XCTAssertFalse(FileReader.isBinaryPlist(xml))
+    }
+
+    func testConvertBinaryPlistToXML() throws {
+        // Create a binary plist via PropertyListSerialization
+        let dict: [String: Any] = ["PayloadDisplayName": "Test Profile", "PayloadVersion": 1]
+        let binaryData = try PropertyListSerialization.data(
+            fromPropertyList: dict, format: .binary, options: 0
+        )
+        XCTAssertTrue(FileReader.isBinaryPlist(binaryData))
+
+        let xmlString = FileReader.convertBinaryPlistToXMLString(binaryData)
+        XCTAssertNotNil(xmlString)
+        XCTAssertTrue(xmlString!.contains("PayloadDisplayName"))
+        XCTAssertTrue(xmlString!.contains("Test Profile"))
+        XCTAssertTrue(xmlString!.contains("<?xml"))
+    }
+
+    func testConvertBinaryPlistReturnsNilForInvalidData() {
+        let garbage = Data([0x62, 0x70, 0x6c, 0x69, 0x73, 0x74, 0xFF, 0xFF])
+        XCTAssertNil(FileReader.convertBinaryPlistToXMLString(garbage))
+    }
+
+    // MARK: - CMS envelope detection
+
+    func testIsCMSEnvelopeDetection() {
+        // Bytes containing the PKCS#7 signedData OID
+        var fakeEnvelope = Data(count: 5)
+        fakeEnvelope.append(contentsOf: [0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x07, 0x02])
+        fakeEnvelope.append(Data(count: 10))
+        XCTAssertTrue(FileReader.isCMSEnvelope(fakeEnvelope))
+
+        let plainXML = "<?xml version=\"1.0\"?>".data(using: .utf8)!
+        XCTAssertFalse(FileReader.isCMSEnvelope(plainXML))
+    }
+
+    func testIsCMSEnvelopeTooShort() {
+        let short = Data([0x06, 0x09, 0x2a])
+        XCTAssertFalse(FileReader.isCMSEnvelope(short))
+    }
+
+    func testStripCMSSignatureReturnsNilForNonCMS() {
+        let plainXML = "<?xml version=\"1.0\"?><plist></plist>".data(using: .utf8)!
+        XCTAssertNil(FileReader.stripCMSSignature(from: plainXML))
+    }
+
+    // MARK: - Pipeline order (binary plist after CMS strip)
+
+    func testBinaryPlistDetectedAfterCMSStrip() throws {
+        // Simulate the pipeline: after CMS stripping, the inner content is a binary plist
+        let dict: [String: Any] = ["PayloadType": "Configuration"]
+        let binaryData = try PropertyListSerialization.data(
+            fromPropertyList: dict, format: .binary, options: 0
+        )
+
+        // Verify the pipeline steps work in sequence
+        XCTAssertTrue(FileReader.isBinaryPlist(binaryData))
+        let xmlString = FileReader.convertBinaryPlistToXMLString(binaryData)
+        XCTAssertNotNil(xmlString)
+        XCTAssertTrue(xmlString!.contains("PayloadType"))
+        XCTAssertTrue(xmlString!.contains("Configuration"))
+    }
 }
