@@ -126,6 +126,7 @@
 					<string>net.daringfireball.markdown</string>
 					<string>io.macadmins.pique.hcl</string>
 					<string>io.macadmins.pique.recipe</string>
+					<string>com.apple.terminal.shell-script</string>
 				</array>
 				<key>QLFileExtensions</key>
 				<array>
@@ -141,6 +142,7 @@
 					<string>bash</string>
 					<string>zsh</string>
 					<string>rc</string>
+					<string>command</string>
 					<string>ps1</string>
 					<string>psm1</string>
 					<string>py</string>

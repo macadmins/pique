@@ -16,7 +16,7 @@ enum FileFormat {
         case "toml", "lock": self = .toml
         case "xml", "recipe": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
-        case "sh", "bash", "zsh", "ksh", "dash", "rc": self = .shell
+        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell
         case "py", "pyw", "pyi": self = .python
         case "rb", "gemspec", "rakefile": self = .ruby

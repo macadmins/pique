@@ -33,8 +33,24 @@ class PreviewProvider: NSViewController, QLPreviewingController {
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
         do {
-            let text = try FileReader.read(url: url)
+            var data = try FileReader.readData(url: url)
             let format = FileFormat(pathExtension: url.pathExtension) ?? .json
+
+            // Step 1: Strip CMS signature from signed mobileconfig files
+            if format == .mobileconfig, FileReader.isCMSEnvelope(data),
+               let inner = FileReader.stripCMSSignature(from: data) {
+                data = inner
+            }
+
+            // Step 2: Convert binary plist to XML text
+            let text: String
+            if FileReader.isBinaryPlist(data),
+               let xml = FileReader.convertBinaryPlistToXMLString(data) {
+                text = xml
+            } else {
+                text = FileReader.decodeToString(data)
+            }
+
             let isDark = view.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
             let html = SyntaxHighlighter.highlight(text, format: format, darkMode: isDark)
 
