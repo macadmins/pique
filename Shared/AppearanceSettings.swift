@@ -28,24 +28,24 @@ enum AppearanceSettings {
         UserDefaults(suiteName: appGroupID) ?? .standard
     }
 
-    /// Returns the stored appearance override for a file extension, defaulting to `.system`.
-    static func override(for ext: String) -> AppearanceOverride {
+    /// Returns the stored appearance override for a format group name, defaulting to `.system`.
+    static func override(forFormat format: String) -> AppearanceOverride {
         let raw = (defaults.dictionary(forKey: key) as? [String: String]) ?? [:]
-        guard let value = raw[ext.lowercased()],
+        guard let value = raw[format],
               let override = AppearanceOverride(rawValue: value) else {
             return .system
         }
         return override
     }
 
-    /// Persists an appearance override for a file extension.
+    /// Persists an appearance override for a format group name.
     /// Setting `.system` removes the entry entirely (returns to default behaviour).
-    static func setOverride(_ value: AppearanceOverride, for ext: String) {
+    static func setOverride(_ value: AppearanceOverride, forFormat format: String) {
         var raw = (defaults.dictionary(forKey: key) as? [String: String]) ?? [:]
         if value == .system {
-            raw.removeValue(forKey: ext.lowercased())
+            raw.removeValue(forKey: format)
         } else {
-            raw[ext.lowercased()] = value.rawValue
+            raw[format] = value.rawValue
         }
         defaults.set(raw, forKey: key)
     }

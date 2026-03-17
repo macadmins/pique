@@ -1,30 +1,28 @@
 //  SettingsView.swift
 //  Pique
 //
-//  Settings sheet for configuring per-extension appearance overrides.
+//  Settings sheet for configuring per-format appearance overrides.
 
 import SwiftUI
 
 struct SettingsView: View {
-    // Groups of (display label, file extensions) for all supported formats.
-    private let formatGroups: [(name: String, icon: String, color: Color, extensions: [String])] = [
-        ("JSON",         "doc.text",                              .orange, ["json"]),
-        ("YAML",         "doc.text",                              .purple, ["yaml", "yml"]),
-        ("TOML",         "doc.text",                              .blue,   ["toml", "lock"]),
-        ("XML",          "doc.text",                              .green,  ["xml", "recipe"]),
-        ("mobileconfig", "lock.doc",                              .red,    ["mobileconfig", "plist"]),
-        ("Shell",        "terminal",                              .mint,   ["sh", "bash", "zsh", "ksh", "dash", "rc", "command"]),
-        ("PowerShell",   "terminal",                              .blue,   ["ps1", "psm1", "psd1"]),
-        ("Python",       "chevron.left.forwardslash.chevron.right", .cyan, ["py", "pyw", "pyi"]),
-        ("Ruby",         "chevron.left.forwardslash.chevron.right", .red,  ["rb"]),
-        ("Go",           "chevron.left.forwardslash.chevron.right", .teal, ["go"]),
-        ("Rust",         "chevron.left.forwardslash.chevron.right", .orange, ["rs"]),
-        ("JavaScript",   "chevron.left.forwardslash.chevron.right", .yellow, ["js", "jsx", "ts", "tsx", "mjs", "cjs"]),
-        ("Markdown",     "doc.richtext",                          .gray,   ["md", "markdown", "adoc"]),
-        ("HCL",          "doc.text",                              .indigo, ["tf", "tfvars", "hcl"]),
+    private let formatGroups: [(name: String, icon: String, color: Color)] = [
+        ("JSON",         "doc.text",                               .orange),
+        ("YAML",         "doc.text",                               .purple),
+        ("TOML",         "doc.text",                               .blue),
+        ("XML",          "doc.text",                               .green),
+        ("mobileconfig", "lock.doc",                               .red),
+        ("Shell",        "terminal",                               .mint),
+        ("PowerShell",   "terminal",                               .blue),
+        ("Python",       "chevron.left.forwardslash.chevron.right", .cyan),
+        ("Ruby",         "chevron.left.forwardslash.chevron.right", .red),
+        ("Go",           "chevron.left.forwardslash.chevron.right", .teal),
+        ("Rust",         "chevron.left.forwardslash.chevron.right", .orange),
+        ("JavaScript",   "chevron.left.forwardslash.chevron.right", .yellow),
+        ("Markdown",     "doc.richtext",                           .gray),
+        ("HCL",          "doc.text",                               .indigo),
     ]
 
-    // Track overrides in local state so the view refreshes when pickers change.
     @State private var overrides: [String: AppearanceOverride] = [:]
     @Environment(\.dismiss) private var dismiss
 
@@ -49,18 +47,15 @@ struct SettingsView: View {
                 .padding(.horizontal)
                 .padding(.top, 12)
 
-            // Format list
+            // One row per format group
             List {
                 ForEach(formatGroups, id: \.name) { group in
-                    Section {
-                        ForEach(group.extensions, id: \.self) { ext in
-                            ExtensionRow(ext: ext, override: binding(for: ext))
-                        }
-                    } header: {
-                        Label(group.name, systemImage: group.icon)
-                            .foregroundStyle(group.color)
-                            .font(.caption.bold())
-                    }
+                    FormatRow(
+                        name: group.name,
+                        icon: group.icon,
+                        color: group.color,
+                        override: binding(for: group.name)
+                    )
                 }
             }
             .listStyle(.inset)
@@ -69,12 +64,12 @@ struct SettingsView: View {
         .onAppear { loadOverrides() }
     }
 
-    private func binding(for ext: String) -> Binding<AppearanceOverride> {
+    private func binding(for format: String) -> Binding<AppearanceOverride> {
         Binding(
-            get: { overrides[ext] ?? .system },
+            get: { overrides[format] ?? .system },
             set: { newValue in
-                overrides[ext] = newValue
-                AppearanceSettings.setOverride(newValue, for: ext)
+                overrides[format] = newValue
+                AppearanceSettings.setOverride(newValue, forFormat: format)
             }
         )
     }
@@ -82,24 +77,27 @@ struct SettingsView: View {
     private func loadOverrides() {
         var loaded: [String: AppearanceOverride] = [:]
         for group in formatGroups {
-            for ext in group.extensions {
-                let o = AppearanceSettings.override(for: ext)
-                if o != .system { loaded[ext] = o }
-            }
+            let o = AppearanceSettings.override(forFormat: group.name)
+            if o != .system { loaded[group.name] = o }
         }
         overrides = loaded
     }
 }
 
-private struct ExtensionRow: View {
-    let ext: String
+private struct FormatRow: View {
+    let name: String
+    let icon: String
+    let color: Color
     @Binding var override: AppearanceOverride
 
     var body: some View {
         HStack {
-            Text(".\(ext)")
-                .font(.system(.body, design: .monospaced))
-                .foregroundStyle(override == .system ? .secondary : .primary)
+            Label(name, systemImage: icon)
+                .font(.caption.bold())
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 6))
+                .foregroundStyle(color)
             Spacer()
             Picker("", selection: $override) {
                 ForEach(AppearanceOverride.allCases, id: \.self) { option in
@@ -109,6 +107,7 @@ private struct ExtensionRow: View {
             .pickerStyle(.segmented)
             .fixedSize()
         }
+        .padding(.vertical, 2)
     }
 }
 
