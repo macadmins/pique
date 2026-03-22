@@ -51,7 +51,16 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 text = FileReader.decodeToString(data)
             }
 
-            let isDark = view.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let formatName = PreviewProvider.formatName(for: url.pathExtension)
+            let isDark: Bool
+            switch AppearanceSettings.override(forFormat: formatName) {
+            case .system:
+                isDark = view.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            case .light:
+                isDark = false
+            case .dark:
+                isDark = true
+            }
             let html = SyntaxHighlighter.highlight(text, format: format, darkMode: isDark)
 
             logger.info("Preview for \(url.lastPathComponent, privacy: .public)")
@@ -77,6 +86,27 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         } catch {
             logger.error("Preview failed: \(error.localizedDescription, privacy: .public)")
             handler(error)
+        }
+    }
+
+    /// Maps a file extension to a format group name matching AppearanceSettings keys.
+    private static func formatName(for ext: String) -> String {
+        switch ext.lowercased() {
+        case "json":                                              return "JSON"
+        case "yaml", "yml":                                      return "YAML"
+        case "toml", "lock":                                     return "TOML"
+        case "xml", "recipe":                                    return "XML"
+        case "mobileconfig", "plist":                            return "mobileconfig"
+        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": return "Shell"
+        case "ps1", "psm1", "psd1":                              return "PowerShell"
+        case "py", "pyw", "pyi":                                 return "Python"
+        case "rb":                                               return "Ruby"
+        case "go":                                               return "Go"
+        case "rs":                                               return "Rust"
+        case "js", "jsx", "ts", "tsx", "mjs", "cjs":            return "JavaScript"
+        case "md", "markdown", "adoc":                           return "Markdown"
+        case "tf", "tfvars", "hcl":                              return "HCL"
+        default:                                                  return ext
         }
     }
 }

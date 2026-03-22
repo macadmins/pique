@@ -6,6 +6,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var showSettings = false
+
     private let formats = [
         ("JSON", "doc.text", Color.orange),
         ("YAML", "doc.text", Color.purple),
@@ -47,6 +49,21 @@ struct ContentView: View {
         }
         .padding(48)
         .frame(minWidth: 700, minHeight: 300)
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                showSettings = true
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .padding(16)
+            .help("Appearance Settings")
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
     }
 }
 
