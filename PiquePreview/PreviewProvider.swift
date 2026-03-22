@@ -92,7 +92,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
     /// Maps a file extension to a format group name matching AppearanceSettings keys.
     private static func formatName(for ext: String) -> String {
         switch ext.lowercased() {
-        case "json":                                              return "JSON"
+        case "json", "ndjson", "jsonl":                            return "JSON"
         case "yaml", "yml":                                      return "YAML"
         case "toml", "lock":                                     return "TOML"
         case "xml", "recipe":                                    return "XML"

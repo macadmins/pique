@@ -96,6 +96,24 @@
 					</array>
 				</dict>
 			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.ndjson</string>
+				<key>UTTypeDescription</key>
+				<string>Newline Delimited JSON</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>ndjson</string>
+						<string>jsonl</string>
+					</array>
+				</dict>
+			</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -106,6 +124,7 @@
 				<key>QLSupportedContentTypes</key>
 				<array>
 					<string>public.json</string>
+					<string>io.macadmins.pique.ndjson</string>
 					<string>public.yaml</string>
 					<string>public.xml</string>
 					<string>io.toml</string>
@@ -131,6 +150,8 @@
 				<key>QLFileExtensions</key>
 				<array>
 					<string>json</string>
+					<string>ndjson</string>
+					<string>jsonl</string>
 					<string>yaml</string>
 					<string>yml</string>
 					<string>toml</string>
