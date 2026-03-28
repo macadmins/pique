@@ -7,7 +7,7 @@ import Foundation
 
 enum FileFormat {
     case json, yaml, toml, xml, mobileconfig, shell, powershell, python, ruby, go, rust, javascript,
-        markdown, hcl
+        markdown, hcl, log
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
@@ -25,12 +25,17 @@ enum FileFormat {
         case "js", "jsx", "ts", "tsx", "mjs", "cjs": self = .javascript
         case "md", "markdown", "adoc": self = .markdown
         case "tf", "tfvars", "hcl": self = .hcl
+        case "log", "out", "err": self = .log
         default: return nil
         }
     }
 }
 
 enum SyntaxHighlighter {
+    /// Maximum characters to tokenize for syntax highlighting.
+    /// Beyond this the preview is truncated at the nearest line boundary.
+    private static let previewCharLimit = 512_000  // ~500 KB of text
+
     static func highlight(_ source: String, format: FileFormat, darkMode: Bool = false) -> String {
         if format == .mobileconfig, let data = source.data(using: .utf8) {
             if let html = renderMobileconfig(data, dark: darkMode) {
@@ -45,23 +50,50 @@ enum SyntaxHighlighter {
                 return html
             }
         }
+
+        // Truncate very large files at the nearest line boundary
+        let truncated: Bool
+        let text: String
+        if source.count > previewCharLimit {
+            let cutIndex = source.index(source.startIndex, offsetBy: previewCharLimit)
+            if let lineEnd = source[cutIndex...].firstIndex(of: "\n") {
+                text = String(source[..<lineEnd])
+            } else {
+                text = String(source[..<cutIndex])
+            }
+            truncated = true
+        } else {
+            text = source
+            truncated = false
+        }
+
         let tokens: [Token]
         switch format {
-        case .json: tokens = tokenizeJSON(source)
-        case .yaml: tokens = tokenizeYAML(source)
-        case .toml: tokens = tokenizeTOML(source)
-        case .xml, .mobileconfig: tokens = tokenizeXML(source)
-        case .shell: tokens = tokenizeShell(source)
-        case .powershell: tokens = tokenizePowerShell(source)
-        case .python: tokens = tokenizePython(source)
-        case .ruby: tokens = tokenizeRuby(source)
-        case .go: tokens = tokenizeGo(source)
-        case .rust: tokens = tokenizeRust(source)
-        case .javascript: tokens = tokenizeJavaScript(source)
-        case .markdown: return renderMarkdown(source, dark: darkMode)
-        case .hcl: tokens = tokenizeHCL(source)
+        case .json: tokens = tokenizeJSON(text)
+        case .yaml: tokens = tokenizeYAML(text)
+        case .toml: tokens = tokenizeTOML(text)
+        case .xml, .mobileconfig: tokens = tokenizeXML(text)
+        case .shell: tokens = tokenizeShell(text)
+        case .powershell: tokens = tokenizePowerShell(text)
+        case .python: tokens = tokenizePython(text)
+        case .ruby: tokens = tokenizeRuby(text)
+        case .go: tokens = tokenizeGo(text)
+        case .rust: tokens = tokenizeRust(text)
+        case .javascript: tokens = tokenizeJavaScript(text)
+        case .markdown: return renderMarkdown(text, dark: darkMode)
+        case .hcl: tokens = tokenizeHCL(text)
+        case .log: tokens = tokenizeLog(text)
         }
-        return wrapHTML(renderTokens(tokens), dark: darkMode)
+
+        var body = renderTokens(tokens)
+        if truncated {
+            let muted = darkMode ? "#98989d" : "#6e6e73"
+            let totalLines = source.split(separator: "\n", omittingEmptySubsequences: false).count
+            let shownLines = text.split(separator: "\n", omittingEmptySubsequences: false).count
+            body +=
+                "\n\n<span style=\"color:\(muted);font-style:italic;\">⋯ Preview truncated (\(shownLines.formatted()) of \(totalLines.formatted()) lines shown)</span>\n"
+        }
+        return wrapHTML(body, dark: darkMode)
     }
 
     // MARK: - Mobileconfig Renderer
@@ -1096,6 +1128,73 @@ enum SyntaxHighlighter {
         }
     }
 
+    // MARK: - Log Tokenizer (heuristic, line-by-line for performance)
+
+    private static func tokenizeLog(_ src: String) -> [Token] {
+        // Compile regex once per call — still far cheaper than per-line or per-match.
+        let regex = try! Regex(
+            #"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})"#  // 1: syslog timestamp
+                + #"|(\d{4}[-/]\d{2}[-/]\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)"#  // 2: ISO/common timestamp
+                + #"|(\[\d{2}/\w{3}/\d{4}[:\d ]+[+-]?\d{0,4}\])"#  // 3: Apache CLF timestamp
+                + #"|\b((?:EMERG(?:ENCY)?|FATAL|CRIT(?:ICAL)?|ALERT):?)"#  // 4: critical severity
+                + #"|\b((?:ERR(?:OR)?):?)"#  // 5: error severity
+                + #"|\b((?:WARN(?:ING)?):?)"#  // 6: warning severity
+                + #"|\b((?:NOTICE|INFO):?)"#  // 7: info/notice severity
+                + #"|\b((?:DEBUG|TRACE|VERBOSE):?)"#  // 8: debug severity
+                + #"|(\d{1,3}(?:\.\d{1,3}){3})"#  // 9: IPv4 address
+                + #"|\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b"#  // 10: HTTP method
+                + #"|\b([1-5]\d{2})\b"#  // 11: HTTP status code
+                + #"|("(?:[^"\\]|\\.)*")"#  // 12: double-quoted string
+                + #"|(/[\w./-]+)"#  // 13: file path
+                + #"|\b(\d+(?:\.\d+)?(?:%|ms|[smhd]|[KMGT]i?[Bb])?)\b"#  // 14: number
+        )
+        let handler: (MatchResult) -> [Token]? = { match in
+            if let ts = match[1] {
+                return [Token(text: ts, kind: .comment)]
+            } else if let ts = match[2] {
+                return [Token(text: ts, kind: .comment)]
+            } else if let ts = match[3] {
+                return [Token(text: ts, kind: .comment)]
+            } else if let sev = match[4] {
+                return [Token(text: sev, kind: .plistValue)]
+            } else if let sev = match[5] {
+                return [Token(text: sev, kind: .plistValue)]
+            } else if let sev = match[6] {
+                return [Token(text: sev, kind: .attrName)]
+            } else if let sev = match[7] {
+                return [Token(text: sev, kind: .bool)]
+            } else if let sev = match[8] {
+                return [Token(text: sev, kind: .comment)]
+            } else if let ip = match[9] {
+                return [Token(text: ip, kind: .number)]
+            } else if let method = match[10] {
+                return [Token(text: method, kind: .keyword)]
+            } else if let status = match[11] {
+                let code = Int(status) ?? 0
+                let kind: Token.Kind = code >= 500 ? .plistValue : code >= 400 ? .attrName : code >= 300 ? .attrValue : .bool
+                return [Token(text: status, kind: kind)]
+            } else if let str = match[12] {
+                return [Token(text: str, kind: .string)]
+            } else if let path = match[13] {
+                return [Token(text: path, kind: .variable)]
+            } else if let num = match[14] {
+                return [Token(text: num, kind: .number)]
+            }
+            return nil
+        }
+
+        // Process line-by-line to avoid O(n²) regex scanning on large files.
+        var tokens: [Token] = []
+        tokens.reserveCapacity(src.utf8.count / 40)
+        var first = true
+        for line in src.split(separator: "\n", omittingEmptySubsequences: false) {
+            if first { first = false } else { tokens.append(Token(text: "\n", kind: .plain)) }
+            let lineStr = String(line)
+            tokens.append(contentsOf: tokenize(lineStr, regex: regex, handler: handler))
+        }
+        return tokens
+    }
+
     // MARK: - Markdown Renderer
 
     private static func renderMarkdown(_ source: String, dark: Bool) -> String {
@@ -1430,22 +1529,39 @@ enum SyntaxHighlighter {
     // MARK: - HTML Rendering
 
     private static func renderTokens(_ tokens: [Token]) -> String {
-        tokens.map { token in
+        // Estimate total size: each token is ~(text + 40 bytes span overhead)
+        let estimatedSize = tokens.reduce(0) { $0 + $1.text.utf8.count + 40 }
+        var html = ""
+        html.reserveCapacity(estimatedSize)
+        for token in tokens {
             let escaped = escapeHTML(token.text)
             switch token.kind {
             case .plain, .punctuation:
-                return escaped
+                html += escaped
             default:
-                return "<span class=\"\(token.kind.rawValue)\">\(escaped)</span>"
+                html += "<span class=\""
+                html += token.kind.rawValue
+                html += "\">"
+                html += escaped
+                html += "</span>"
             }
-        }.joined()
+        }
+        return html
     }
 
     static func escapeHTML(_ text: String) -> String {
-        text.replacingOccurrences(of: "&", with: "&amp;")
-            .replacingOccurrences(of: "<", with: "&lt;")
-            .replacingOccurrences(of: ">", with: "&gt;")
-            .replacingOccurrences(of: "\"", with: "&quot;")
+        var result = ""
+        result.reserveCapacity(text.utf8.count + text.utf8.count / 8)
+        for ch in text {
+            switch ch {
+            case "&": result += "&amp;"
+            case "<": result += "&lt;"
+            case ">": result += "&gt;"
+            case "\"": result += "&quot;"
+            default: result.append(ch)
+            }
+        }
+        return result
     }
 
     private static func wrapHTML(_ body: String, dark: Bool) -> String {

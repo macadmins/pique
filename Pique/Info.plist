@@ -96,6 +96,25 @@
 					</array>
 				</dict>
 			</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Log File</string>
+			<key>UTTypeIdentifier</key>
+			<string>io.macadmins.pique.log</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>log</string>
+					<string>out</string>
+					<string>err</string>
+				</array>
+			</dict>
+		</dict>
 		</array>
 	</dict>
 </plist>
