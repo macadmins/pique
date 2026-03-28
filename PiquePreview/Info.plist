@@ -114,6 +114,25 @@
 					</array>
 				</dict>
 			</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>io.macadmins.pique.log</string>
+			<key>UTTypeDescription</key>
+			<string>Log File</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>log</string>
+					<string>out</string>
+					<string>err</string>
+				</array>
+			</dict>
+		</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -146,6 +165,9 @@
 					<string>io.macadmins.pique.hcl</string>
 					<string>io.macadmins.pique.recipe</string>
 					<string>com.apple.terminal.shell-script</string>
+					<string>io.macadmins.pique.log</string>
+					<string>com.apple.log</string>
+					<string>public.log</string>
 				</array>
 				<key>QLFileExtensions</key>
 				<array>
@@ -184,6 +206,9 @@
 					<string>tfvars</string>
 					<string>hcl</string>
 					<string>recipe</string>
+					<string>log</string>
+					<string>out</string>
+					<string>err</string>
 				</array>
 				<key>QLPreviewWidth</key>
 				<real>1024</real>

@@ -17,6 +17,7 @@ struct ContentView: View {
         ("Shell", "terminal", Color.mint),
         ("Python", "chevron.left.forwardslash.chevron.right", Color.cyan),
         ("HCL", "doc.text", Color.indigo),
+        ("Log", "doc.text.below.ecg", Color.gray),
     ]
 
     var body: some View {

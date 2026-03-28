@@ -340,4 +340,117 @@ final class HighlightIntegrationTests: XCTestCase {
         let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
         XCTAssertTrue(html.contains(#"class="string""#))
     }
+
+    // MARK: - Log files: heuristic highlighting
+
+    func testLogSeverityLevels() {
+        let log = "ERROR something failed\nWARN low disk\nINFO started\nDEBUG tick"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="plistValue">ERROR</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="attrName">WARN</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="bool">INFO</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="comment">DEBUG</span>"#))
+    }
+
+    func testLogISOTimestamp() {
+        let log = "2026-03-28T14:05:33Z INFO ready"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="comment">2026-03-28T14:05:33Z</span>"#))
+    }
+
+    func testLogSyslogTimestamp() {
+        let log = "Mar 28 14:05:33 myhost syslogd: restart"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="comment">Mar 28 14:05:33</span>"#))
+    }
+
+    func testLogIPv4Address() {
+        let log = "connection from 192.168.1.100 accepted"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="number">192.168.1.100</span>"#))
+    }
+
+    func testLogHTTPMethodAndStatusCode() {
+        let log = #"GET /api/health 200"#
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="keyword">GET</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="variable">/api/health</span>"#))
+    }
+
+    func testLogQuotedString() {
+        let log = #"message: "disk space low""#
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="string">&quot;disk space low&quot;</span>"#))
+    }
+
+    func testLogCriticalSeverity() {
+        let log = "FATAL out of memory\nCRITICAL disk failure"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="plistValue">FATAL</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="plistValue">CRITICAL</span>"#))
+    }
+
+    func testLogApostropheNotTreatedAsString() {
+        let log = "INFO: Successfully validated the received JWT's signature..."
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        // The apostrophe in JWT's must NOT cause text to be swallowed into a string span
+        XCTAssertFalse(html.contains(#"<span class="string">'s signature...'"#),
+                        "Apostrophe in JWT's should not start a quoted string")
+        XCTAssertTrue(html.contains("JWT"))
+        XCTAssertTrue(html.contains("signature"))
+    }
+
+    func testLogSeverityWithColon() {
+        let log = "2025-09-16 06:20:56 +0100 – INFO: Notifying that Docker has been installed"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="bool">INFO:</span>"#))
+    }
+
+    func testLogMultiLinePreservesAllLines() {
+        let log = "INFO line one\nWARN line two\nERROR line three"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="bool">INFO</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="attrName">WARN</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="plistValue">ERROR</span>"#))
+        XCTAssertTrue(html.contains("line one"))
+        XCTAssertTrue(html.contains("line two"))
+        XCTAssertTrue(html.contains("line three"))
+    }
+
+    func testLogHTTPStatusCodeColoring() {
+        let log = "status 200\nstatus 404\nstatus 500"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        // 2xx → .bool (blue/green)
+        XCTAssertTrue(html.contains(#"<span class="bool">200</span>"#))
+        // 4xx → .attrName (orange/warning)
+        XCTAssertTrue(html.contains(#"<span class="attrName">404</span>"#))
+        // 5xx → .plistValue (bold red)
+        XCTAssertTrue(html.contains(#"<span class="plistValue">500</span>"#))
+    }
+
+    func testLogFilePath() {
+        let log = "loading /usr/local/etc/config.yaml"
+        let html = body(SyntaxHighlighter.highlight(log, format: .log))
+        XCTAssertTrue(html.contains(#"<span class="variable">/usr/local/etc/config.yaml</span>"#))
+    }
+
+    // MARK: - Truncation
+
+    func testTruncationAppliedForLargeInput() {
+        // Generate a string larger than 512KB
+        let line = "2026-03-28T09:00:00Z INFO This is a log line for testing truncation purposes.\n"
+        let count = (512_001 / line.count) + 1
+        let bigLog = String(repeating: line, count: count)
+        XCTAssertGreaterThan(bigLog.count, 512_000, "Test input should exceed the limit")
+
+        let html = SyntaxHighlighter.highlight(bigLog, format: .log)
+        XCTAssertTrue(html.contains("Preview truncated"), "Large input should show truncation notice")
+        XCTAssertTrue(html.contains("lines shown"), "Truncation notice should mention line counts")
+    }
+
+    func testNoTruncationForSmallInput() {
+        let log = "INFO all good"
+        let html = SyntaxHighlighter.highlight(log, format: .log)
+        XCTAssertFalse(html.contains("Preview truncated"), "Small input should not be truncated")
+    }
 }

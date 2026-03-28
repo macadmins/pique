@@ -106,6 +106,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         case "js", "jsx", "ts", "tsx", "mjs", "cjs":            return "JavaScript"
         case "md", "markdown", "adoc":                           return "Markdown"
         case "tf", "tfvars", "hcl":                              return "HCL"
+        case "log", "out", "err":                                return "Log"
         default:                                                  return ext
         }
     }

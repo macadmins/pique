@@ -81,6 +81,12 @@ final class FileFormatTests: XCTestCase {
         }
     }
 
+    func testLog() {
+        for ext in ["log", "out", "err"] {
+            XCTAssertEqual(FileFormat(pathExtension: ext), .log, "Expected .log for .\(ext)")
+        }
+    }
+
     // MARK: - Case insensitivity
 
     func testCaseInsensitive() {
@@ -88,6 +94,7 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "YAML"), .yaml)
         XCTAssertEqual(FileFormat(pathExtension: "Toml"), .toml)
         XCTAssertEqual(FileFormat(pathExtension: "SH"), .shell)
+        XCTAssertEqual(FileFormat(pathExtension: "LOG"), .log)
     }
 
     // MARK: - Unknown / empty
