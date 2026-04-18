@@ -32,45 +32,17 @@ enum FileFormat {
 }
 
 enum SyntaxHighlighter {
-    /// Maximum UTF-8 bytes to tokenize for syntax highlighting.
+    /// Maximum characters to tokenize for syntax highlighting.
     /// Beyond this the preview is truncated at the last line boundary within the limit.
-    private static let previewByteLimit = 512_000  // Byte limit; approximately 500 KB
-
-    /// Convert a UTF-8 byte limit into a valid `String.Index`, backing up to the
-    /// nearest valid boundary when the limit lands in the middle of a scalar.
-    private static func previewCutIndex(in text: String, byteLimit: Int) -> String.Index {
-        let utf8 = text.utf8
-        let limitedIndex = utf8.index(utf8.startIndex, offsetBy: byteLimit, limitedBy: utf8.endIndex)
-            ?? utf8.endIndex
-
-        if limitedIndex == utf8.endIndex {
-            return text.endIndex
-        }
-
-        var candidate = limitedIndex
-        while candidate > utf8.startIndex, candidate.samePosition(in: text) == nil {
-            candidate = utf8.index(before: candidate)
-        }
-
-        return candidate.samePosition(in: text) ?? text.startIndex
-    }
+    private static let previewCharLimit = 512_000  // ~500 KB of text
 
     /// Count lines efficiently via a single pass over UTF-8 bytes.
     private static func lineCount(_ text: String) -> Int {
-        var newlineCount = 0
-        var endsWithNewline = false
-        for byte in text.utf8 {
-            if byte == 0x0A {
-                newlineCount += 1
-                endsWithNewline = true
-            } else {
-                endsWithNewline = false
-            }
+        var count = 1
+        for byte in text.utf8 where byte == 0x0A {
+            count += 1
         }
-        if text.isEmpty || endsWithNewline {
-            return newlineCount
-        }
-        return newlineCount + 1
+        return count
     }
 
     /// Build the truncation notice HTML appended to previews of large files.
@@ -82,11 +54,11 @@ enum SyntaxHighlighter {
     }
 
     static func highlight(_ source: String, format: FileFormat, darkMode: Bool = false) -> String {
-        // Truncate very large files at the last line boundary within the byte limit
+        // Truncate very large files at the last line boundary within the limit
         let truncated: Bool
         let text: String
-        if source.utf8.count > previewByteLimit {
-            let cutIndex = previewCutIndex(in: source, byteLimit: previewByteLimit)
+        if source.count > previewCharLimit {
+            let cutIndex = source.index(source.startIndex, offsetBy: previewCharLimit)
             if let lineEnd = source[..<cutIndex].lastIndex(of: "\n") {
                 text = String(source[..<lineEnd])
             } else {
@@ -98,19 +70,19 @@ enum SyntaxHighlighter {
             truncated = false
         }
 
-        // Early returns for special renderers. For `.mobileconfig`, only use the
-        // specialized renderer when showing the full preview; otherwise fall back
-        // to the generic XML path below so large previews are truly truncated.
-        if format == .mobileconfig, !truncated, let data = source.data(using: .utf8) {
-            if let html = renderMobileconfig(data, dark: darkMode) {
+        // Early returns for special renderers — truncation is applied above
+        if format == .mobileconfig, let data = text.data(using: .utf8) {
+            if var html = renderMobileconfig(data, dark: darkMode) {
+                if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
                 return html
             }
         }
-        if format == .json, !truncated, let data = source.data(using: .utf8),
+        if format == .json, let data = text.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             isAppleConfigProfile(json)
         {
-            if let html = renderJSONProfile(json, rawJSON: text, dark: darkMode) {
+            if var html = renderJSONProfile(json, rawJSON: text, dark: darkMode) {
+                if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
                 return html
             }
         }
@@ -134,28 +106,13 @@ enum SyntaxHighlighter {
         }
 
         if truncated {
-            body = insertTruncationNotice(
-                into: body,
-                notice: truncationNotice(source: source, shown: text, darkMode: darkMode)
-            )
+            body += truncationNotice(source: source, shown: text, darkMode: darkMode)
         }
 
         if format == .markdown {
             return body  // renderMarkdown already wraps in full HTML
         }
         return wrapHTML(body, dark: darkMode)
-    }
-
-    private static func insertTruncationNotice(into htmlOrBody: String, notice: String) -> String {
-        if let bodyCloseRange = htmlOrBody.range(
-            of: "</body>",
-            options: [.caseInsensitive, .backwards]
-        ) {
-            var html = htmlOrBody
-            html.insert(contentsOf: notice, at: bodyCloseRange.lowerBound)
-            return html
-        }
-        return htmlOrBody + notice
     }
 
     // MARK: - Mobileconfig Renderer
@@ -1204,11 +1161,11 @@ enum SyntaxHighlighter {
             #"((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})"#  // 1: syslog timestamp
                 + #"|(\d{4}[-/]\d{2}[-/]\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)"#  // 2: ISO/common timestamp
                 + #"|(\[\d{2}/\w{3}/\d{4}[:\d ]+[+-]?\d{0,4}\])"#  // 3: Apache CLF timestamp
-                + #"|\b((?:EMERG(?:ENCY)?|FATAL|CRIT(?:ICAL)?|ALERT)(?::|\b))"#  // 4: critical severity
-                + #"|\b((?:ERR(?:OR)?)(?::|\b))"#  // 5: error severity
-                + #"|\b((?:WARN(?:ING)?)(?::|\b))"#  // 6: warning severity
-                + #"|\b((?:NOTICE|INFO)(?::|\b))"#  // 7: info/notice severity
-                + #"|\b((?:DEBUG|TRACE|VERBOSE)(?::|\b))"#  // 8: debug severity
+                + #"|\b((?:EMERG(?:ENCY)?|FATAL|CRIT(?:ICAL)?|ALERT):?)"#  // 4: critical severity
+                + #"|\b((?:ERR(?:OR)?):?)"#  // 5: error severity
+                + #"|\b((?:WARN(?:ING)?):?)"#  // 6: warning severity
+                + #"|\b((?:NOTICE|INFO):?)"#  // 7: info/notice severity
+                + #"|\b((?:DEBUG|TRACE|VERBOSE):?)"#  // 8: debug severity
                 + #"|(\d{1,3}(?:\.\d{1,3}){3})"#  // 9: IPv4 address
                 + #"|\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b"#  // 10: HTTP method
                 + #"|\b([1-5]\d{2})\b"#  // 11: HTTP status code
@@ -1239,7 +1196,7 @@ enum SyntaxHighlighter {
                 return [Token(text: method, kind: .keyword)]
             } else if let status = match[11] {
                 let code = Int(status) ?? 0
-                let kind: Token.Kind = code >= 500 ? .logError : code >= 400 ? .logWarn : code >= 300 ? .logDebug : .logInfo
+                let kind: Token.Kind = code >= 500 ? .logError : code >= 400 ? .logWarn : code >= 300 ? .logDebug : .number
                 return [Token(text: status, kind: kind)]
             } else if let str = match[12] {
                 return [Token(text: str, kind: .string)]
