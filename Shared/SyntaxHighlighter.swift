@@ -57,7 +57,9 @@ enum SyntaxHighlighter {
         // Truncate very large files at the last line boundary within the limit
         let truncated: Bool
         let text: String
-        if let cutIndex = source.index(source.startIndex, offsetBy: previewCharLimit, limitedBy: source.endIndex) {
+        if let cutIndex = source.index(source.startIndex, offsetBy: previewCharLimit, limitedBy: source.endIndex),
+            cutIndex < source.endIndex
+        {
             if let lineEnd = source[..<cutIndex].lastIndex(of: "\n") {
                 text = String(source[..<lineEnd])
             } else {

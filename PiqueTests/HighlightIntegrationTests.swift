@@ -447,4 +447,16 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains("Preview truncated"), "Large input should show truncation notice")
         XCTAssertTrue(html.contains("lines shown"), "Truncation notice should mention line counts")
     }
+
+    func testTruncationNotAppliedAtExactLimit() {
+        let bigLog = String(repeating: "a", count: 512_000)
+        XCTAssertEqual(bigLog.count, 512_000, "Test input should be exactly at the limit")
+
+        let html = SyntaxHighlighter.highlight(bigLog, format: .log)
+        let highlightedBody = body(html)
+
+        XCTAssertFalse(html.contains("Preview truncated"), "Input exactly at the limit should not show truncation notice")
+        XCTAssertFalse(html.contains("lines shown"), "Input exactly at the limit should not show truncation line counts")
+        XCTAssertTrue(highlightedBody.contains(bigLog), "Full content should be preserved when input is exactly at the limit")
+    }
 }
