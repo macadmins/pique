@@ -34,7 +34,7 @@ enum FileFormat {
 enum SyntaxHighlighter {
     /// Maximum characters to tokenize for syntax highlighting.
     /// Beyond this the preview is truncated at the last line boundary within the limit.
-    private static let previewCharLimit = 512_000  // ~500 KB of text
+    private static let previewCharLimit = 512_000  // Character limit; approximately 500 KB for ASCII text
 
     /// Count lines efficiently via a single pass over UTF-8 bytes.
     private static func lineCount(_ text: String) -> Int {
@@ -79,16 +79,11 @@ enum SyntaxHighlighter {
             truncated = false
         }
 
-        // Early returns for special renderers — parse the full source so truncation
-        // does not invalidate XML/JSON profile detection for large previews.
-        if format == .mobileconfig, let data = source.data(using: .utf8) {
-            if var html = renderMobileconfig(data, dark: darkMode) {
-                if truncated {
-                    html = insertTruncationNotice(
-                        into: html,
-                        notice: truncationNotice(source: source, shown: text, darkMode: darkMode)
-                    )
-                }
+        // Early returns for special renderers. For `.mobileconfig`, only use the
+        // specialized renderer when showing the full preview; otherwise fall back
+        // to the generic XML path below so large previews are truly truncated.
+        if format == .mobileconfig, !truncated, let data = source.data(using: .utf8) {
+            if let html = renderMobileconfig(data, dark: darkMode) {
                 return html
             }
         }
@@ -96,7 +91,7 @@ enum SyntaxHighlighter {
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             isAppleConfigProfile(json)
         {
-            if var html = renderJSONProfile(json, rawJSON: source, dark: darkMode) {
+            if var html = renderJSONProfile(json, rawJSON: text, dark: darkMode) {
                 if truncated {
                     html = insertTruncationNotice(
                         into: html,
