@@ -71,18 +71,22 @@ enum SyntaxHighlighter {
             truncated = false
         }
 
-        // Early returns for special renderers — truncation is applied above
-        if format == .mobileconfig, let data = text.data(using: .utf8) {
+        // Early returns for special renderers — parse structured data from the full source,
+        // and only apply truncation to the displayed preview/notice.
+        if format == .mobileconfig, let data = source.data(using: .utf8) {
             if var html = renderMobileconfig(data, dark: darkMode) {
-                if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
+                if truncated {
+                    let notice = truncationNotice(source: source, shown: text, darkMode: darkMode)
+                    html = insertHTMLFragmentBeforeBodyClose(notice, in: html)
+                }
                 return html
             }
         }
-        if format == .json, let data = text.data(using: .utf8),
+        if format == .json, let data = source.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             isAppleConfigProfile(json)
         {
-            if var html = renderJSONProfile(json, rawJSON: text, dark: darkMode) {
+            if var html = renderJSONProfile(json, rawJSON: source, dark: darkMode) {
                 if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
                 return html
             }
