@@ -448,6 +448,40 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains("lines shown"), "Truncation notice should mention line counts")
     }
 
+    func testTruncationNoticeAppearsInsideBodyForMarkdown() {
+        let line = "# Heading\nThis is a markdown line for testing truncation purposes.\n\n"
+        let count = (512_001 / line.count) + 1
+        let bigMarkdown = String(repeating: line, count: count)
+        XCTAssertGreaterThan(bigMarkdown.count, 512_000, "Test input should exceed the limit")
+
+        let html = body(SyntaxHighlighter.highlight(bigMarkdown, format: .markdown))
+        XCTAssertTrue(html.contains("Preview truncated"), "Large markdown input should show truncation notice inside the rendered body")
+        XCTAssertTrue(html.contains("lines shown"), "Markdown truncation notice should mention line counts inside the rendered body")
+    }
+
+    func testTruncationNoticeAppearsInsideBodyForMobileconfig() {
+        let line = """
+        <key>PayloadDescription</key>
+        <string>This is a mobileconfig line for testing truncation purposes.</string>
+
+        """
+        let count = (512_001 / line.count) + 1
+        let bigMobileconfig = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+        \(String(repeating: line, count: count))
+        </dict>
+        </plist>
+        """
+        XCTAssertGreaterThan(bigMobileconfig.count, 512_000, "Test input should exceed the limit")
+
+        let html = body(SyntaxHighlighter.highlight(bigMobileconfig, format: .mobileconfig))
+        XCTAssertTrue(html.contains("Preview truncated"), "Large mobileconfig input should show truncation notice inside the rendered body")
+        XCTAssertTrue(html.contains("lines shown"), "Mobileconfig truncation notice should mention line counts inside the rendered body")
+    }
+
     func testNoTruncationForSmallInput() {
         let log = "INFO all good"
         let html = SyntaxHighlighter.highlight(log, format: .log)

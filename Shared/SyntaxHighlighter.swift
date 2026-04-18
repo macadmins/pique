@@ -38,11 +38,20 @@ enum SyntaxHighlighter {
 
     /// Count lines efficiently via a single pass over UTF-8 bytes.
     private static func lineCount(_ text: String) -> Int {
-        var count = 1
-        for byte in text.utf8 where byte == 0x0A {
-            count += 1
+        var newlineCount = 0
+        var endsWithNewline = false
+        for byte in text.utf8 {
+            if byte == 0x0A {
+                newlineCount += 1
+                endsWithNewline = true
+            } else {
+                endsWithNewline = false
+            }
         }
-        return count
+        if text.isEmpty || endsWithNewline {
+            return newlineCount
+        }
+        return newlineCount + 1
     }
 
     /// Build the truncation notice HTML appended to previews of large files.
@@ -70,19 +79,30 @@ enum SyntaxHighlighter {
             truncated = false
         }
 
-        // Early returns for special renderers — truncation is applied above
-        if format == .mobileconfig, let data = text.data(using: .utf8) {
+        // Early returns for special renderers — parse the full source so truncation
+        // does not invalidate XML/JSON profile detection for large previews.
+        if format == .mobileconfig, let data = source.data(using: .utf8) {
             if var html = renderMobileconfig(data, dark: darkMode) {
-                if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
+                if truncated {
+                    html = insertTruncationNotice(
+                        into: html,
+                        notice: truncationNotice(source: source, shown: text, darkMode: darkMode)
+                    )
+                }
                 return html
             }
         }
-        if format == .json, let data = text.data(using: .utf8),
+        if format == .json, let data = source.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             isAppleConfigProfile(json)
         {
-            if var html = renderJSONProfile(json, rawJSON: text, dark: darkMode) {
-                if truncated { html += truncationNotice(source: source, shown: text, darkMode: darkMode) }
+            if var html = renderJSONProfile(json, rawJSON: source, dark: darkMode) {
+                if truncated {
+                    html = insertTruncationNotice(
+                        into: html,
+                        notice: truncationNotice(source: source, shown: text, darkMode: darkMode)
+                    )
+                }
                 return html
             }
         }
@@ -106,13 +126,28 @@ enum SyntaxHighlighter {
         }
 
         if truncated {
-            body += truncationNotice(source: source, shown: text, darkMode: darkMode)
+            body = insertTruncationNotice(
+                into: body,
+                notice: truncationNotice(source: source, shown: text, darkMode: darkMode)
+            )
         }
 
         if format == .markdown {
             return body  // renderMarkdown already wraps in full HTML
         }
         return wrapHTML(body, dark: darkMode)
+    }
+
+    private static func insertTruncationNotice(into htmlOrBody: String, notice: String) -> String {
+        if let bodyCloseRange = htmlOrBody.range(
+            of: "</body>",
+            options: [.caseInsensitive, .backwards]
+        ) {
+            var html = htmlOrBody
+            html.insert(contentsOf: notice, at: bodyCloseRange.lowerBound)
+            return html
+        }
+        return htmlOrBody + notice
     }
 
     // MARK: - Mobileconfig Renderer
