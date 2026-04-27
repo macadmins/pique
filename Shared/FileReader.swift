@@ -106,21 +106,14 @@ enum FileReader {
     }
 
     /// Decodes a base64-wrapped VPP service token to pretty-printed JSON.
-    /// The `token` field is masked because it is a bearer credential.
     static func decodeVPPToken(_ data: Data) -> String? {
         let trimmed = decodeToString(data).trimmingCharacters(in: .whitespacesAndNewlines)
         guard let decoded = Data(base64Encoded: trimmed, options: .ignoreUnknownCharacters),
-              let object = try? JSONSerialization.jsonObject(with: decoded),
-              var dict = object as? [String: Any]
+              let object = try? JSONSerialization.jsonObject(with: decoded)
         else { return nil }
 
-        if let token = dict["token"] as? String, !token.isEmpty {
-            let preview = token.prefix(8)
-            dict["token"] = "\(preview)…<redacted, \(token.count) chars>"
-        }
-
         guard let pretty = try? JSONSerialization.data(
-            withJSONObject: dict,
+            withJSONObject: object,
             options: [.prettyPrinted, .sortedKeys]
         ) else { return nil }
         return String(data: pretty, encoding: .utf8)
