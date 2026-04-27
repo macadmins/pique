@@ -12,9 +12,9 @@ enum FileFormat {
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
         case "json", "ndjson", "jsonl", "vpptoken": self = .json
-        case "yaml", "yml": self = .yaml
+        case "yaml", "yml", "recipe": self = .yaml
         case "toml", "lock": self = .toml
-        case "xml", "recipe": self = .xml
+        case "xml": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
         case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell

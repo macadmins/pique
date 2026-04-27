@@ -34,7 +34,13 @@ class PreviewProvider: NSViewController, QLPreviewingController {
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
         do {
             var data = try FileReader.readData(url: url)
-            let format = FileFormat(pathExtension: url.pathExtension) ?? .json
+            let extLower = url.pathExtension.lowercased()
+            let isAutoPkgRecipe = extLower == "recipe"
+                || url.lastPathComponent.lowercased().hasSuffix(".recipe.plist")
+            // Recipe overrides (.recipe.plist) keep .plist extension on disk but render as YAML.
+            let format: FileFormat = isAutoPkgRecipe
+                ? .yaml
+                : (FileFormat(pathExtension: url.pathExtension) ?? .json)
 
             // Step 1: Strip CMS signature from signed mobileconfig files
             if format == .mobileconfig, FileReader.isCMSEnvelope(data),
@@ -42,11 +48,14 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 data = inner
             }
 
-            // Step 2: Convert binary plist to XML text
+            // Step 2: Convert source bytes to displayable text
             let text: String
-            if url.pathExtension.lowercased() == "vpptoken",
+            if extLower == "vpptoken",
                let json = FileReader.decodeVPPToken(data) {
                 text = json
+            } else if isAutoPkgRecipe,
+                      let yaml = FileReader.convertRecipeToYAMLString(data) {
+                text = yaml
             } else if FileReader.isBinaryPlist(data),
                       let xml = FileReader.convertBinaryPlistToXMLString(data) {
                 text = xml
@@ -54,7 +63,9 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 text = FileReader.decodeToString(data)
             }
 
-            let formatName = PreviewProvider.formatName(for: url.pathExtension)
+            let formatName = isAutoPkgRecipe
+                ? "YAML"
+                : PreviewProvider.formatName(for: url.pathExtension)
             let isDark: Bool
             switch AppearanceSettings.override(forFormat: formatName) {
             case .system:
@@ -141,9 +152,9 @@ class PreviewProvider: NSViewController, QLPreviewingController {
     private static func formatName(for ext: String) -> String {
         switch ext.lowercased() {
         case "json", "ndjson", "jsonl", "vpptoken":              return "JSON"
-        case "yaml", "yml":                                      return "YAML"
+        case "yaml", "yml", "recipe":                            return "YAML"
         case "toml", "lock":                                     return "TOML"
-        case "xml", "recipe":                                    return "XML"
+        case "xml":                                              return "XML"
         case "mobileconfig", "plist":                            return "mobileconfig"
         case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": return "Shell"
         case "ps1", "psm1", "psd1":                              return "PowerShell"
