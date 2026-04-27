@@ -26,9 +26,9 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "xml"), .xml)
     }
 
-    func testRecipeMapsToYAML() {
-        // .recipe files are XML plists on disk but rendered as YAML for readability
-        XCTAssertEqual(FileFormat(pathExtension: "recipe"), .yaml)
+    func testRecipeIsItsOwnFormat() {
+        // .recipe files are XML plists but get a custom structured renderer
+        XCTAssertEqual(FileFormat(pathExtension: "recipe"), .recipe)
     }
 
     func testMobileconfig() {

@@ -35,11 +35,15 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         do {
             var data = try FileReader.readData(url: url)
             let extLower = url.pathExtension.lowercased()
+            let nameLower = url.lastPathComponent.lowercased()
+            // .recipe (XML), .recipe.plist (override), and .recipe.yaml (YAML recipe)
+            // all flow through the structured renderer. Pathological extensions like
+            // .yaml/.plist alone are NOT treated as recipes — the suffix matters.
             let isAutoPkgRecipe = extLower == "recipe"
-                || url.lastPathComponent.lowercased().hasSuffix(".recipe.plist")
-            // Recipe overrides (.recipe.plist) keep .plist extension on disk but render as YAML.
+                || nameLower.hasSuffix(".recipe.plist")
+                || nameLower.hasSuffix(".recipe.yaml")
             let format: FileFormat = isAutoPkgRecipe
-                ? .yaml
+                ? .recipe
                 : (FileFormat(pathExtension: url.pathExtension) ?? .json)
 
             // Step 1: Strip CMS signature from signed mobileconfig files
@@ -53,9 +57,6 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             if extLower == "vpptoken",
                let json = FileReader.decodeVPPToken(data) {
                 text = json
-            } else if isAutoPkgRecipe,
-                      let yaml = FileReader.convertRecipeToYAMLString(data) {
-                text = yaml
             } else if FileReader.isBinaryPlist(data),
                       let xml = FileReader.convertBinaryPlistToXMLString(data) {
                 text = xml
@@ -64,7 +65,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             }
 
             let formatName = isAutoPkgRecipe
-                ? "YAML"
+                ? "AutoPkg"
                 : PreviewProvider.formatName(for: url.pathExtension)
             let isDark: Bool
             switch AppearanceSettings.override(forFormat: formatName) {

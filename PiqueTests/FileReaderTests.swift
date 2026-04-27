@@ -200,88 +200,80 @@ final class FileReaderTests: XCTestCase {
         XCTAssertTrue(xmlString!.contains("Configuration"))
     }
 
-    // MARK: - YAML emitter
+    // MARK: - Recipe YAML parser
 
-    func testYAMLEmitsScalarString() {
-        XCTAssertEqual(YAMLEmitter.emit("hello"), "hello\n")
-    }
-
-    func testYAMLQuotesNumberLikeString() {
-        XCTAssertEqual(YAMLEmitter.emit("1.0"), "\"1.0\"\n")
-    }
-
-    func testYAMLQuotesBoolLikeString() {
-        XCTAssertEqual(YAMLEmitter.emit("yes"), "\"yes\"\n")
-        XCTAssertEqual(YAMLEmitter.emit("Off"), "\"Off\"\n")
-    }
-
-    func testYAMLEmitsBoolsFromNSNumber() {
-        XCTAssertEqual(YAMLEmitter.emit(NSNumber(value: true)), "true\n")
-        XCTAssertEqual(YAMLEmitter.emit(NSNumber(value: false)), "false\n")
-    }
-
-    func testYAMLEmitsIntegers() {
-        XCTAssertEqual(YAMLEmitter.emit(NSNumber(value: 42)), "42\n")
-    }
-
-    func testYAMLEmitsMultilineStringAsBlockScalar() {
-        let out = YAMLEmitter.emit(["Description": "Line one\n\nLine three"])
-        XCTAssertTrue(out.contains("Description: |-"), "expected block scalar; got:\n\(out)")
-        XCTAssertTrue(out.contains("Line one"))
-        XCTAssertTrue(out.contains("Line three"))
-        XCTAssertFalse(out.contains("\\n"))  // never escape inside block scalar
-    }
-
-    func testYAMLEmitsNestedDict() {
-        let out = YAMLEmitter.emit(["Input": ["NAME": "1Password CLI"]])
-        XCTAssertTrue(out.contains("Input:\n"))
-        XCTAssertTrue(out.contains("  NAME: 1Password CLI"))
-    }
-
-    func testYAMLEmitsArrayOfDicts() {
-        let plist: [String: Any] = [
-            "Process": [
-                ["Processor": "URLDownloader"],
-                ["Processor": "EndOfCheckPhase"],
-            ]
-        ]
-        let out = YAMLEmitter.emit(plist)
-        XCTAssertTrue(out.contains("Process:\n"))
-        XCTAssertTrue(out.contains("  - Processor: URLDownloader"))
-        XCTAssertTrue(out.contains("  - Processor: EndOfCheckPhase"))
-    }
-
-    func testYAMLRecipeKeyOrderingPutsDescriptionFirst() {
-        let plist: [String: Any] = [
-            "Process": [],
-            "Identifier": "com.example.recipe",
-            "Description": "Test",
-        ]
-        let out = YAMLEmitter.emit(plist, recipe: true)
-        let descIdx = out.range(of: "Description")!.lowerBound
-        let identIdx = out.range(of: "Identifier")!.lowerBound
-        let procIdx = out.range(of: "Process")!.lowerBound
-        XCTAssertLessThan(descIdx, identIdx)
-        XCTAssertLessThan(identIdx, procIdx)
-    }
-
-    func testRecipeDataConvertsToYAML() {
-        let xml = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <plist version="1.0">
-            <dict>
-                <key>Identifier</key><string>com.example.foo</string>
-                <key>Process</key>
-                <array>
-                    <dict><key>Processor</key><string>URLDownloader</string></dict>
-                </array>
-            </dict>
-            </plist>
+    func testRecipeYAMLParsesScalarsAndNestedMapping() {
+        let yaml = """
+            Identifier: com.example.foo
+            Description: Hello world
+            Input:
+              NAME: Foo
             """
-        let yaml = FileReader.convertRecipeToYAMLString(xml.data(using: .utf8)!)
-        XCTAssertNotNil(yaml)
-        XCTAssertTrue(yaml!.contains("Identifier: com.example.foo"))
-        XCTAssertTrue(yaml!.contains("Process:"))
-        XCTAssertTrue(yaml!.contains("- Processor: URLDownloader"))
+        let dict = RecipeYAMLParser.parse(yaml)
+        XCTAssertEqual(dict?["Identifier"] as? String, "com.example.foo")
+        XCTAssertEqual(dict?["Description"] as? String, "Hello world")
+        XCTAssertEqual((dict?["Input"] as? [String: Any])?["NAME"] as? String, "Foo")
     }
+
+    func testRecipeYAMLParsesSequenceAtSameIndentAsParent() {
+        // recipe-robot emits Process: with `- ` at column 0; this is the bug
+        // that existed in v1 of the parser.
+        let yaml = """
+            Process:
+            - Processor: Alpha
+            - Processor: Beta
+            """
+        let dict = RecipeYAMLParser.parse(yaml)
+        let process = dict?["Process"] as? [Any]
+        XCTAssertEqual(process?.count, 2)
+        XCTAssertEqual((process?[0] as? [String: Any])?["Processor"] as? String, "Alpha")
+        XCTAssertEqual((process?[1] as? [String: Any])?["Processor"] as? String, "Beta")
+    }
+
+    func testRecipeYAMLParsesProcessStepWithArguments() {
+        let yaml = """
+            Process:
+            - Processor: AppPkgCreator
+              Arguments:
+                app_path: '%RECIPE_CACHE_DIR%/%NAME%.app'
+            """
+        let dict = RecipeYAMLParser.parse(yaml)
+        let step = (dict?["Process"] as? [Any])?.first as? [String: Any]
+        XCTAssertEqual(step?["Processor"] as? String, "AppPkgCreator")
+        let args = step?["Arguments"] as? [String: Any]
+        XCTAssertEqual(args?["app_path"] as? String, "%RECIPE_CACHE_DIR%/%NAME%.app")
+    }
+
+    func testRecipeYAMLSingleQuotedNumberStaysString() {
+        let dict = RecipeYAMLParser.parse("MinimumVersion: '2.3'")
+        // Single-quoted '2.3' must be preserved as a string, not converted to 2.3
+        XCTAssertEqual(dict?["MinimumVersion"] as? String, "2.3")
+    }
+
+    func testRecipeYAMLBareNumberBecomesNumber() {
+        let dict = RecipeYAMLParser.parse("MinimumVersion: 2.3")
+        XCTAssertEqual(dict?["MinimumVersion"] as? Double, 2.3)
+    }
+
+    func testRecipeYAMLIgnoresLineComments() {
+        let yaml = """
+            # heading comment
+            Identifier: com.example.foo  # trailing comment
+            """
+        let dict = RecipeYAMLParser.parse(yaml)
+        XCTAssertEqual(dict?["Identifier"] as? String, "com.example.foo")
+    }
+
+    func testRecipeYAMLProcessStepWithoutArguments() {
+        // Raycast.pkg.recipe.yaml has `- Processor: AppPkgCreator` with no Arguments
+        let yaml = """
+            Process:
+            - Processor: AppPkgCreator
+            """
+        let dict = RecipeYAMLParser.parse(yaml)
+        let step = (dict?["Process"] as? [Any])?.first as? [String: Any]
+        XCTAssertEqual(step?["Processor"] as? String, "AppPkgCreator")
+        XCTAssertNil(step?["Arguments"])
+    }
+
 }
