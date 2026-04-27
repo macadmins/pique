@@ -114,6 +114,23 @@
 					</array>
 				</dict>
 			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.vpptoken</string>
+				<key>UTTypeDescription</key>
+				<string>Apple VPP / Apps and Books Token</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.data</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>vpptoken</string>
+					</array>
+				</dict>
+			</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -145,6 +162,7 @@
 					<string>net.daringfireball.markdown</string>
 					<string>io.macadmins.pique.hcl</string>
 					<string>io.macadmins.pique.recipe</string>
+					<string>io.macadmins.pique.vpptoken</string>
 					<string>com.apple.terminal.shell-script</string>
 				</array>
 				<key>QLFileExtensions</key>
@@ -184,6 +202,7 @@
 					<string>tfvars</string>
 					<string>hcl</string>
 					<string>recipe</string>
+					<string>vpptoken</string>
 				</array>
 				<key>QLPreviewWidth</key>
 				<real>1024</real>

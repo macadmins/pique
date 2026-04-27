@@ -9,6 +9,7 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "json"), .json)
         XCTAssertEqual(FileFormat(pathExtension: "ndjson"), .json)
         XCTAssertEqual(FileFormat(pathExtension: "jsonl"), .json)
+        XCTAssertEqual(FileFormat(pathExtension: "vpptoken"), .json)
     }
 
     func testYAML() {
