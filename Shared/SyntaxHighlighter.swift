@@ -1456,8 +1456,11 @@ enum SyntaxHighlighter {
         let numColor = dark ? "#636366" : "#94a3b8"
         return lines.enumerated().map { (i, line) in
             let num = String(i + 1)
-            let padded = String(repeating: " ", count: width - num.count) + num
-            return "<span style=\"color:\(numColor);user-select:none;padding-right:1.2em;\">\(padded)</span>\(line)"
+            // Right-justify the number and include a trailing space as the gutter gap.
+            // The trailing space (not CSS padding) makes the column width predictable
+            // when the caller calculates headIndent for NSAttributedString wrap indent.
+            let padded = String(repeating: " ", count: width - num.count) + num + " "
+            return "<span style=\"color:\(numColor);\">\(padded)</span>\(line)"
         }.joined(separator: "\n")
     }
 
