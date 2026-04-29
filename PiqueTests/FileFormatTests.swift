@@ -7,6 +7,8 @@ final class FileFormatTests: XCTestCase {
 
     func testJSON() {
         XCTAssertEqual(FileFormat(pathExtension: "json"), .json)
+        XCTAssertEqual(FileFormat(pathExtension: "ndjson"), .json)
+        XCTAssertEqual(FileFormat(pathExtension: "jsonl"), .json)
     }
 
     func testYAML() {

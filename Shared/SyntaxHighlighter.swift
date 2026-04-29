@@ -11,7 +11,7 @@ enum FileFormat {
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
-        case "json": self = .json
+        case "json", "ndjson", "jsonl": self = .json
         case "yaml", "yml": self = .yaml
         case "toml", "lock": self = .toml
         case "xml", "recipe": self = .xml

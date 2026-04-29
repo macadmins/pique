@@ -22,9 +22,9 @@
 		A400000000000004 /* FormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000004 /* FormattingTests.swift */; };
 		A400000000000005 /* HTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000005 /* HTMLTests.swift */; };
 		A400000000000006 /* HighlightIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000006 /* HighlightIntegrationTests.swift */; };
-		CC8B35452F6824C700C97855 /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8B35442F6824C700C97855 /* AppearanceSettings.swift */; };
-		CC8B35462F6824C700C97855 /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8B35442F6824C700C97855 /* AppearanceSettings.swift */; };
-		CC8B35482F6824DF00C97855 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8B35472F6824DF00C97855 /* SettingsView.swift */; };
+		A10000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
+		A20000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
+		A10000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000B /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +79,8 @@
 		D300000000000004 /* FormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattingTests.swift; sourceTree = "<group>"; };
 		D300000000000005 /* HTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLTests.swift; sourceTree = "<group>"; };
 		D300000000000006 /* HighlightIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightIntegrationTests.swift; sourceTree = "<group>"; };
+		D10000000000000A /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
+		D10000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +124,7 @@
 			children = (
 				D100000000000001 /* PiqueApp.swift */,
 				D100000000000002 /* ContentView.swift */,
+				D10000000000000B /* SettingsView.swift */,
 				D100000000000003 /* Assets.xcassets */,
 				D100000000000004 /* Pique.entitlements */,
 				CC8B35472F6824DF00C97855 /* SettingsView.swift */,
@@ -144,7 +147,7 @@
 			children = (
 				D100000000000008 /* SyntaxHighlighter.swift */,
 				D100000000000009 /* FileReader.swift */,
-				CC8B35442F6824C700C97855 /* AppearanceSettings.swift */,
+				D10000000000000A /* AppearanceSettings.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -304,9 +307,10 @@
 				CC8B35452F6824C700C97855 /* AppearanceSettings.swift in Sources */,
 				A100000000000001 /* PiqueApp.swift in Sources */,
 				A100000000000002 /* ContentView.swift in Sources */,
-				CC8B35482F6824DF00C97855 /* SettingsView.swift in Sources */,
+				A10000000000000C /* SettingsView.swift in Sources */,
 				A100000000000005 /* SyntaxHighlighter.swift in Sources */,
 				A100000000000007 /* FileReader.swift in Sources */,
+				A10000000000000B /* AppearanceSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,6 +322,7 @@
 				A200000000000004 /* PreviewProvider.swift in Sources */,
 				A200000000000006 /* SyntaxHighlighter.swift in Sources */,
 				A200000000000008 /* FileReader.swift in Sources */,
+				A20000000000000B /* AppearanceSettings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
