@@ -61,7 +61,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             case .dark:
                 isDark = true
             }
-            let html = SyntaxHighlighter.highlight(text, format: format, darkMode: isDark)
+            let html = SyntaxHighlighter.highlight(text, format: format, darkMode: isDark, showLineNumbers: AppearanceSettings.showLineNumbers)
 
             logger.info("Preview for \(url.lastPathComponent, privacy: .public)")
 

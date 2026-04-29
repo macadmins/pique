@@ -24,6 +24,7 @@ struct SettingsView: View {
     ]
 
     @State private var overrides: [String: AppearanceOverride] = [:]
+    @State private var showLineNumbers: Bool = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -40,28 +41,30 @@ struct SettingsView: View {
 
             Divider()
 
-            Text("Override the preview appearance for specific file types, independent of the macOS system appearance.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .padding(.top, 12)
-
             // One row per format group
             List {
-                ForEach(formatGroups, id: \.name) { group in
-                    FormatRow(
-                        name: group.name,
-                        icon: group.icon,
-                        color: group.color,
-                        override: binding(for: group.name)
-                    )
+                Section("General") {
+                    Toggle("Show Line Numbers", isOn: $showLineNumbers)
+                        .onChange(of: showLineNumbers) {
+                            AppearanceSettings.showLineNumbers = showLineNumbers
+                        }
+                }
+
+                Section("Per-Format Appearance") {
+                    ForEach(formatGroups, id: \.name) { group in
+                        FormatRow(
+                            name: group.name,
+                            icon: group.icon,
+                            color: group.color,
+                            override: binding(for: group.name)
+                        )
+                    }
                 }
             }
             .listStyle(.inset)
         }
-        .frame(width: 480, height: 540)
-        .onAppear { loadOverrides() }
+        .frame(width: 480, height: 560)
+        .onAppear { loadSettings() }
     }
 
     private func binding(for format: String) -> Binding<AppearanceOverride> {
@@ -74,13 +77,14 @@ struct SettingsView: View {
         )
     }
 
-    private func loadOverrides() {
+    private func loadSettings() {
         var loaded: [String: AppearanceOverride] = [:]
         for group in formatGroups {
             let o = AppearanceSettings.override(forFormat: group.name)
             if o != .system { loaded[group.name] = o }
         }
         overrides = loaded
+        showLineNumbers = AppearanceSettings.showLineNumbers
     }
 }
 
