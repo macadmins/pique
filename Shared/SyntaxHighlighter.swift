@@ -6,15 +6,16 @@
 import Foundation
 
 enum FileFormat {
-    case json, yaml, toml, xml, mobileconfig, shell, powershell, python, ruby, go, rust, javascript,
-        markdown, hcl
+    case json, yaml, toml, xml, mobileconfig, recipe, shell, powershell, python, ruby, go, rust,
+        javascript, markdown, hcl
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
-        case "json", "ndjson", "jsonl": self = .json
+        case "json", "ndjson", "jsonl", "vpptoken": self = .json
         case "yaml", "yml": self = .yaml
+        case "recipe": self = .recipe
         case "toml", "lock": self = .toml
-        case "xml", "recipe": self = .xml
+        case "xml": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
         case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell
@@ -37,6 +38,11 @@ enum SyntaxHighlighter {
                 return html
             }
         }
+        if format == .recipe, let data = source.data(using: .utf8) {
+            if let html = renderRecipe(data, dark: darkMode) {
+                return html
+            }
+        }
         if format == .json, let data = source.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             isAppleConfigProfile(json)
@@ -50,7 +56,7 @@ enum SyntaxHighlighter {
         case .json: tokens = tokenizeJSON(source)
         case .yaml: tokens = tokenizeYAML(source)
         case .toml: tokens = tokenizeTOML(source)
-        case .xml, .mobileconfig: tokens = tokenizeXML(source)
+        case .xml, .mobileconfig, .recipe: tokens = tokenizeXML(source)
         case .shell: tokens = tokenizeShell(source)
         case .powershell: tokens = tokenizePowerShell(source)
         case .python: tokens = tokenizePython(source)
@@ -291,6 +297,173 @@ enum SyntaxHighlighter {
         h += "</td></tr></table>"
 
         return wrapMobileconfigHTML(h, t: t)
+    }
+
+    // MARK: - AutoPkg Recipe Renderer
+
+    /// Dispatches recipe rendering based on whether the file is XML plist or YAML.
+    private static func renderRecipe(_ data: Data, dark: Bool) -> String? {
+        guard let rawSource = String(data: data, encoding: .utf8) else { return nil }
+        let head = rawSource.prefix(256).lowercased()
+        let isYAML = !head.contains("<?xml") && !head.contains("<plist")
+
+        let plist: [String: Any]?
+        if isYAML {
+            plist = RecipeYAMLParser.parse(rawSource)
+        } else {
+            plist = (try? PropertyListSerialization.propertyList(from: data, format: nil))
+                as? [String: Any]
+        }
+        guard let plist else { return nil }
+        return renderRecipe(plist: plist, rawSource: rawSource, isYAML: isYAML, dark: dark)
+    }
+
+    /// Renders an AutoPkg recipe as a structured Pique view: type badge, identifier card,
+    /// Input variables, Process steps, and the original source (XML or YAML) at the bottom.
+    /// Mirrors `renderMobileconfig` so users get the same visual language.
+    private static func renderRecipe(plist: [String: Any], rawSource: String, isYAML: Bool, dark: Bool) -> String {
+        let t = dark ? Theme.dark : Theme.light
+        var h = ""
+
+        let identifier = plist["Identifier"] as? String ?? "Untitled Recipe"
+        let description = plist["Description"] as? String
+        let parentRecipe = plist["ParentRecipe"] as? String
+        let minVersion = plist["MinimumVersion"] as? String
+        let input = plist["Input"] as? [String: Any] ?? [:]
+        let process = plist["Process"] as? [[String: Any]] ?? []
+        let trustInfo = plist["ParentRecipeTrustInfo"] as? [String: Any]
+        let isOverride = trustInfo != nil
+
+        let (typeText, typeColor) = recipeTypeBadge(identifier: identifier, isOverride: isOverride, t: t)
+
+        // Display name: prefer Input.NAME, fallback to last segment of Identifier.
+        let displayName = (input["NAME"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+            ?? identifier.split(separator: ".").last.map(String.init)
+            ?? identifier
+
+        // ── Header card ──
+        h += "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" bgcolor=\"\(t.cell)\">"
+        h += "<tr><td style=\"padding: 20px \(pad)px 16px \(pad)px;\">"
+        h += "<font color=\"\(typeColor)\" size=\"1\"><b>\(typeText.uppercased())</b></font><br>"
+        h += "<font size=\"5\" face=\"-apple-system, Helvetica\" color=\"\(t.text)\"><b>\(esc(displayName))</b></font>"
+        h += "<br><font size=\"1\" face=\"Menlo\" color=\"\(t.muted)\">\(esc(identifier))</font>"
+        if let desc = description, !desc.isEmpty {
+            let descHTML = esc(desc).replacingOccurrences(of: "\n", with: "<br>")
+            h += "<br><br><font size=\"2\" color=\"\(t.label)\">\(descHTML)</font>"
+        }
+        h += "</td></tr></table>"
+
+        // ── Recipe metadata (Parent + MinimumVersion) ──
+        var metaRows: [(String, String)] = []
+        if let p = parentRecipe {
+            metaRows.append(("Parent Recipe",
+                "<font size=\"2\" face=\"Menlo\" color=\"\(t.text)\">\(esc(p))</font>"))
+        }
+        if let m = minVersion {
+            metaRows.append(("Minimum Version",
+                "<font size=\"2\" color=\"\(t.text)\">\(esc(m))</font>"))
+        }
+        if !metaRows.isEmpty {
+            h += sectionHeader("Recipe", t: t)
+            h += groupStart(t)
+            for (i, row) in metaRows.enumerated() {
+                h += cellRow(row.0, row.1, t: t, last: i == metaRows.count - 1)
+            }
+            h += groupEnd()
+        }
+
+        // ── Input variables ──
+        if !input.isEmpty {
+            h += sectionHeader("Input", t: t)
+            renderRecipeDictGroup(input, t: t, into: &h)
+        }
+
+        // ── Process steps ──
+        if !process.isEmpty {
+            h += sectionHeader("Process", t: t)
+            for (idx, step) in process.enumerated() {
+                let processor = step["Processor"] as? String ?? "Unknown Processor"
+                let arguments = step["Arguments"] as? [String: Any] ?? [:]
+
+                h += "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">"
+                h += "<tr><td style=\"padding: 14px \(pad)px 4px \(pad)px;\">"
+                h += "<font size=\"1\" color=\"\(t.muted)\"><b>STEP \(idx + 1)</b></font><br>"
+                h += "<font size=\"3\" face=\"-apple-system, Helvetica\" color=\"\(t.text)\"><b>\(esc(processor))</b></font>"
+                h += "</td></tr></table>"
+
+                if !arguments.isEmpty {
+                    renderRecipeDictGroup(arguments, t: t, into: &h)
+                }
+            }
+        }
+
+        // ── Trust info (overrides only) ──
+        if let trust = trustInfo, !trust.isEmpty {
+            h += sectionHeader("Parent Recipe Trust Info", t: t)
+            h += renderComplexValue(trust, t: t)
+        }
+
+        // ── Source panel (XML or YAML) ──
+        let sourceLabel = isYAML ? "YAML SOURCE" : "XML SOURCE"
+        h += "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">"
+        h += "<tr><td style=\"padding: 28px \(pad)px 0 \(pad)px;\">\(thinLine(t))</td></tr>"
+        h += "<tr><td style=\"padding: 8px \(pad)px 6px \(pad)px;\">"
+        h += "<font size=\"1\" color=\"\(t.muted)\"><b>\(sourceLabel)</b></font>"
+        h += "</td></tr></table>"
+        h += "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>"
+        h += "<td bgcolor=\"\(t.cell)\" style=\"padding: 12px \(pad)px;\">"
+        let sourceTokens = isYAML ? tokenizeYAML(rawSource) : tokenizeXML(rawSource)
+        h += "<pre style=\"font: 11px/1.6 Menlo, monospace; margin: 0; white-space: pre-wrap; word-wrap: break-word; color: \(t.key);\">\(renderTokens(sourceTokens))</pre>"
+        h += "</td></tr></table>"
+
+        return wrapMobileconfigHTML(h, t: t)
+    }
+
+    /// Renders a dict as a table of rows, splitting simple/complex values like
+    /// the mobileconfig settings group does.
+    private static func renderRecipeDictGroup(_ dict: [String: Any], t: Theme, into h: inout String) {
+        let keys = dict.keys.sorted()
+        let simple = keys.filter { isSimple(dict[$0]!) && !isLongString(dict[$0]!) }
+        let complex = keys.filter { !isSimple(dict[$0]!) || isLongString(dict[$0]!) }
+
+        if !simple.isEmpty {
+            h += groupStart(t)
+            for (i, k) in simple.enumerated() {
+                h += cellRow(k, inlineValue(dict[k]!, key: k, t: t),
+                             t: t, last: i == simple.count - 1)
+            }
+            h += groupEnd()
+        }
+        for k in complex {
+            h += sectionHeader(k, t: t)
+            if let str = dict[k] as? String, str.contains("\n") {
+                // Multi-line scripts/strings get a Menlo block treatment
+                h += "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>"
+                h += "<td bgcolor=\"\(t.cell)\" style=\"padding: 10px \(pad)px;\">"
+                h += "<pre style=\"font: 11px/1.5 Menlo, monospace; margin: 0; white-space: pre-wrap; word-wrap: break-word; color: \(t.text);\">\(esc(str))</pre>"
+                h += "</td></tr></table>"
+            } else {
+                h += renderComplexValue(dict[k]!, t: t)
+            }
+        }
+    }
+
+    /// Type badge based on the recipe identifier (e.g. `com.x.download.Foo` → "Download Recipe").
+    /// Overrides are detected by the presence of `ParentRecipeTrustInfo`.
+    private static func recipeTypeBadge(identifier: String, isOverride: Bool, t: Theme) -> (String, String) {
+        if isOverride {
+            return ("Recipe Override", t.scopeUser)
+        }
+        let parts = identifier.lowercased().split(separator: ".").map(String.init)
+        if parts.contains("download") { return ("Download Recipe", t.scopeDevice) }
+        if parts.contains("pkg")      { return ("Pkg Recipe", t.scopeUser) }
+        if parts.contains("munki")    { return ("Munki Recipe", "#10b981") }
+        if parts.contains("install")  { return ("Install Recipe", "#a855f7") }
+        if parts.contains("jamf") || parts.contains("jss") {
+            return ("Jamf Recipe", "#ef4444")
+        }
+        if parts.contains("intune") { return ("Intune Recipe", "#0ea5e9") }
+        return ("AutoPkg Recipe", t.muted)
     }
 
     // MARK: - JSON Profile Detection & Renderer
@@ -1511,5 +1684,230 @@ enum SyntaxHighlighter {
             <body><pre>\(body)</pre></body>
             </html>
             """
+    }
+}
+
+// MARK: - Recipe YAML parser
+
+/// Parses a constrained YAML subset suitable for AutoPkg recipe files.
+/// Supports: block-style mappings, block-style sequences of mappings or scalars,
+/// plain scalars, single/double-quoted strings, and `#` line comments.
+/// NOT supported: flow style (`{}`/`[]`), anchors, aliases, tags, multi-document streams,
+/// or block scalars (`|`/`>`). Returns nil when the input doesn't look like a mapping.
+enum RecipeYAMLParser {
+    fileprivate struct Token {
+        let indent: Int
+        let content: String
+    }
+
+    static func parse(_ source: String) -> [String: Any]? {
+        let tokens = tokenize(source)
+        guard !tokens.isEmpty else { return nil }
+        var index = 0
+        let result = parseMapping(tokens: tokens, index: &index, indent: tokens[0].indent)
+        return result.isEmpty ? nil : result
+    }
+
+    fileprivate static func tokenize(_ source: String) -> [Token] {
+        var s = source
+        if s.hasPrefix("\u{FEFF}") { s.removeFirst() }
+        var tokens: [Token] = []
+        for line in s.components(separatedBy: "\n") {
+            var indent = 0
+            var i = line.startIndex
+            while i < line.endIndex, line[i] == " " {
+                indent += 1
+                i = line.index(after: i)
+            }
+            let rest = String(line[i...])
+            let trimmed = rest.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
+            tokens.append(Token(indent: indent, content: stripInlineComment(rest)))
+        }
+        return tokens
+    }
+
+    fileprivate static func parseMapping(tokens: [Token], index: inout Int, indent: Int) -> [String: Any] {
+        var dict: [String: Any] = [:]
+        while index < tokens.count {
+            let tok = tokens[index]
+            if tok.indent < indent { break }
+            if tok.indent > indent { index += 1; continue }
+            guard let colon = findUnquotedColon(in: tok.content) else {
+                index += 1
+                continue
+            }
+            let key = unquote(String(tok.content[..<colon]).trimmingCharacters(in: .whitespaces))
+            let valuePart = String(tok.content[tok.content.index(after: colon)...])
+                .trimmingCharacters(in: .whitespaces)
+            index += 1
+
+            if valuePart.isEmpty {
+                // Nested block; peek next token's shape to decide mapping vs sequence.
+                // YAML allows block sequences at the same indent as the parent key
+                // (e.g. `Process:` at col 0 with `- Processor:` also at col 0); mappings
+                // still require strictly greater indent.
+                if index < tokens.count {
+                    let next = tokens[index]
+                    let isSeqStart = next.content.hasPrefix("- ") || next.content == "-"
+                    if isSeqStart && next.indent >= indent {
+                        dict[key] = parseSequence(tokens: tokens, index: &index, indent: next.indent)
+                    } else if next.indent > indent {
+                        dict[key] = parseMapping(tokens: tokens, index: &index, indent: next.indent)
+                    } else {
+                        dict[key] = NSNull()
+                    }
+                } else {
+                    dict[key] = NSNull()
+                }
+            } else {
+                dict[key] = parseScalar(valuePart)
+            }
+        }
+        return dict
+    }
+
+    fileprivate static func parseSequence(tokens: [Token], index: inout Int, indent: Int) -> [Any] {
+        var arr: [Any] = []
+        while index < tokens.count {
+            let tok = tokens[index]
+            if tok.indent < indent { break }
+            if tok.indent > indent { index += 1; continue }
+            guard tok.content.hasPrefix("- ") || tok.content == "-" else { break }
+
+            let after = tok.content == "-"
+                ? ""
+                : String(tok.content.dropFirst(2)).trimmingCharacters(in: .whitespaces)
+
+            if after.isEmpty {
+                index += 1
+                if index < tokens.count, tokens[index].indent > indent {
+                    let next = tokens[index]
+                    if next.content.hasPrefix("- ") {
+                        arr.append(parseSequence(tokens: tokens, index: &index, indent: next.indent))
+                    } else {
+                        arr.append(parseMapping(tokens: tokens, index: &index, indent: next.indent))
+                    }
+                } else {
+                    arr.append(NSNull())
+                }
+            } else if let colon = findUnquotedColon(in: after) {
+                // Inline mapping: "- Key: value" — continuation keys live at indent + 2
+                let firstKey = unquote(String(after[..<colon]).trimmingCharacters(in: .whitespaces))
+                let firstVal = String(after[after.index(after: colon)...])
+                    .trimmingCharacters(in: .whitespaces)
+                index += 1
+                var sub: [String: Any] = [:]
+                if firstVal.isEmpty {
+                    if index < tokens.count, tokens[index].indent > indent {
+                        sub[firstKey] = parseMapping(
+                            tokens: tokens, index: &index, indent: tokens[index].indent)
+                    } else {
+                        sub[firstKey] = NSNull()
+                    }
+                } else {
+                    sub[firstKey] = parseScalar(firstVal)
+                }
+                let continueIndent = indent + 2
+                while index < tokens.count, tokens[index].indent >= continueIndent {
+                    let cont = tokens[index]
+                    if cont.indent != continueIndent { index += 1; continue }
+                    if cont.content.hasPrefix("- ") || cont.content == "-" { break }
+                    guard let c2 = findUnquotedColon(in: cont.content) else {
+                        index += 1
+                        continue
+                    }
+                    let k = unquote(String(cont.content[..<c2]).trimmingCharacters(in: .whitespaces))
+                    let v = String(cont.content[cont.content.index(after: c2)...])
+                        .trimmingCharacters(in: .whitespaces)
+                    index += 1
+                    if v.isEmpty {
+                        if index < tokens.count, tokens[index].indent > continueIndent {
+                            sub[k] = parseMapping(
+                                tokens: tokens, index: &index, indent: tokens[index].indent)
+                        } else {
+                            sub[k] = NSNull()
+                        }
+                    } else {
+                        sub[k] = parseScalar(v)
+                    }
+                }
+                arr.append(sub)
+            } else {
+                arr.append(parseScalar(after))
+                index += 1
+            }
+        }
+        return arr
+    }
+
+    fileprivate static func parseScalar(_ s: String) -> Any {
+        if s.isEmpty || s == "null" || s == "Null" || s == "NULL" || s == "~" { return NSNull() }
+        if let q = unwrapQuoted(s) { return q }
+        if s == "true" || s == "True" || s == "TRUE" { return true }
+        if s == "false" || s == "False" || s == "FALSE" { return false }
+        if let i = Int(s) { return i }
+        if let d = Double(s) { return d }
+        return s
+    }
+
+    fileprivate static func unquote(_ s: String) -> String {
+        unwrapQuoted(s) ?? s
+    }
+
+    fileprivate static func unwrapQuoted(_ s: String) -> String? {
+        guard s.count >= 2 else { return nil }
+        if s.first == "'" && s.last == "'" {
+            return String(s.dropFirst().dropLast())
+                .replacingOccurrences(of: "''", with: "'")
+        }
+        if s.first == "\"" && s.last == "\"" {
+            let inner = String(s.dropFirst().dropLast())
+            return inner
+                .replacingOccurrences(of: "\\n", with: "\n")
+                .replacingOccurrences(of: "\\t", with: "\t")
+                .replacingOccurrences(of: "\\\"", with: "\"")
+                .replacingOccurrences(of: "\\\\", with: "\\")
+        }
+        return nil
+    }
+
+    /// Finds a `:` that's outside any quoted span and followed by EOL or whitespace
+    /// (the YAML rule for a key/value separator).
+    fileprivate static func findUnquotedColon(in s: String) -> String.Index? {
+        var inSingle = false
+        var inDouble = false
+        var i = s.startIndex
+        while i < s.endIndex {
+            let ch = s[i]
+            if ch == "'" && !inDouble { inSingle.toggle() }
+            else if ch == "\"" && !inSingle { inDouble.toggle() }
+            else if ch == ":" && !inSingle && !inDouble {
+                let next = s.index(after: i)
+                if next == s.endIndex || s[next] == " " || s[next] == "\t" {
+                    return i
+                }
+            }
+            i = s.index(after: i)
+        }
+        return nil
+    }
+
+    fileprivate static func stripInlineComment(_ s: String) -> String {
+        var inSingle = false
+        var inDouble = false
+        var prev: Character = " "
+        var i = s.startIndex
+        while i < s.endIndex {
+            let ch = s[i]
+            if ch == "'" && !inDouble { inSingle.toggle() }
+            else if ch == "\"" && !inSingle { inDouble.toggle() }
+            else if ch == "#" && !inSingle && !inDouble && prev == " " {
+                return String(s[..<i]).trimmingCharacters(in: .whitespaces)
+            }
+            prev = ch
+            i = s.index(after: i)
+        }
+        return s.trimmingCharacters(in: .whitespaces)
     }
 }

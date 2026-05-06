@@ -1,6 +1,7 @@
 # Xcode
 build/
 DerivedData/
+*.profraw
 *.xcuserdata
 *.xcworkspace/xcuserdata/
 xcuserdata/
