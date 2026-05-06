@@ -32,7 +32,7 @@ enum FileFormat {
 }
 
 enum SyntaxHighlighter {
-    static func highlight(_ source: String, format: FileFormat, darkMode: Bool = false) -> String {
+    static func highlight(_ source: String, format: FileFormat, darkMode: Bool = false, showLineNumbers: Bool = false) -> String {
         if format == .mobileconfig, let data = source.data(using: .utf8) {
             if let html = renderMobileconfig(data, dark: darkMode) {
                 return html
@@ -67,7 +67,7 @@ enum SyntaxHighlighter {
         case .markdown: return renderMarkdown(source, dark: darkMode)
         case .hcl: tokens = tokenizeHCL(source)
         }
-        return wrapHTML(renderTokens(tokens), dark: darkMode)
+        return wrapHTML(renderTokens(tokens), dark: darkMode, showLineNumbers: showLineNumbers)
     }
 
     // MARK: - Mobileconfig Renderer
@@ -1621,7 +1621,23 @@ enum SyntaxHighlighter {
             .replacingOccurrences(of: "\"", with: "&quot;")
     }
 
-    private static func wrapHTML(_ body: String, dark: Bool) -> String {
+    private static func numberedLines(_ body: String, dark: Bool) -> String {
+        var lines = body.components(separatedBy: "\n")
+        // Drop a single trailing empty line that results from a final newline
+        if lines.last == "" { lines.removeLast() }
+        let width = String(lines.count).count
+        let numColor = dark ? "#636366" : "#94a3b8"
+        return lines.enumerated().map { (i, line) in
+            let num = String(i + 1)
+            // Right-justify the number and include a trailing space as the gutter gap.
+            // The trailing space (not CSS padding) makes the column width predictable
+            // when the caller calculates headIndent for NSAttributedString wrap indent.
+            let padded = String(repeating: " ", count: width - num.count) + num + " "
+            return "<span style=\"color:\(numColor);\">\(padded)</span>\(line)"
+        }.joined(separator: "\n")
+    }
+
+    private static func wrapHTML(_ body: String, dark: Bool, showLineNumbers: Bool = false) -> String {
         let bg = dark ? "#1c1c1e" : "#ffffff"
         let fg = dark ? "#f5f5f7" : "#1d1d1f"
         let colors: String
@@ -1681,7 +1697,7 @@ enum SyntaxHighlighter {
             \(colors)
             </style>
             </head>
-            <body><pre>\(body)</pre></body>
+            <body><pre>\(showLineNumbers ? numberedLines(body, dark: dark) : body)</pre></body>
             </html>
             """
     }

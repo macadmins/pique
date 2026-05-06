@@ -23,9 +23,16 @@ enum AppearanceOverride: String, CaseIterable {
 enum AppearanceSettings {
     static let appGroupID = "group.io.macadmins.pique"
     private static let key = "appearanceOverrides"
+    private static let lineNumbersKey = "showLineNumbers"
 
     private static var defaults: UserDefaults {
         UserDefaults(suiteName: appGroupID) ?? .standard
+    }
+
+    /// Whether to show line numbers in code previews.
+    static var showLineNumbers: Bool {
+        get { defaults.bool(forKey: lineNumbersKey) }
+        set { defaults.set(newValue, forKey: lineNumbersKey) }
     }
 
     /// Returns the stored appearance override for a format group name, defaulting to `.system`.

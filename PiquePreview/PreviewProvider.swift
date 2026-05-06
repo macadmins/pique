@@ -76,7 +76,13 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             case .dark:
                 isDark = true
             }
-            var html = SyntaxHighlighter.highlight(text, format: format, darkMode: isDark)
+            let showLineNumbers = AppearanceSettings.showLineNumbers
+            var html = SyntaxHighlighter.highlight(
+                text,
+                format: format,
+                darkMode: isDark,
+                showLineNumbers: showLineNumbers
+            )
             if url.pathExtension.lowercased() == "vpptoken",
                let info = FileReader.vppTokenInfo(data) {
                 let banner = PreviewProvider.vppTokenBanner(info: info, dark: isDark)
@@ -94,9 +100,31 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 return
             }
 
+            // When line numbers are on, apply a headIndent to every paragraph so
+            // that wrapped lines start at the code column, not at the left margin.
+            let finalString: NSAttributedString
+            if showLineNumbers {
+                let lines = text.components(separatedBy: "\n")
+                let lineCount = lines.last?.isEmpty == true ? lines.count - 1 : lines.count
+                let digits = String(lineCount).count
+                // Gutter is (digits + 1) monospace chars: right-justified number + 1 trailing space
+                let font = attrString.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+                    ?? NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+                let gutterStr = String(repeating: " ", count: digits + 1)
+                let indentWidth = (gutterStr as NSString).size(withAttributes: [.font: font]).width
+                let mutable = NSMutableAttributedString(attributedString: attrString)
+                let paragraphStyle = NSMutableParagraphStyle()
+                paragraphStyle.headIndent = indentWidth
+                mutable.addAttribute(.paragraphStyle, value: paragraphStyle,
+                                     range: NSRange(location: 0, length: mutable.length))
+                finalString = mutable
+            } else {
+                finalString = attrString
+            }
+
             if let scrollView = view as? NSScrollView,
                let textView = scrollView.documentView as? NSTextView {
-                textView.textStorage?.setAttributedString(attrString)
+                textView.textStorage?.setAttributedString(finalString)
                 let bg: NSColor = isDark ? NSColor(red: 0.110, green: 0.110, blue: 0.118, alpha: 1) : .white
                 textView.backgroundColor = bg
                 scrollView.backgroundColor = bg
