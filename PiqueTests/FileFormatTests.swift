@@ -9,6 +9,7 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "json"), .json)
         XCTAssertEqual(FileFormat(pathExtension: "ndjson"), .json)
         XCTAssertEqual(FileFormat(pathExtension: "jsonl"), .json)
+        XCTAssertEqual(FileFormat(pathExtension: "vpptoken"), .json)
     }
 
     func testYAML() {
@@ -23,7 +24,11 @@ final class FileFormatTests: XCTestCase {
 
     func testXML() {
         XCTAssertEqual(FileFormat(pathExtension: "xml"), .xml)
-        XCTAssertEqual(FileFormat(pathExtension: "recipe"), .xml)
+    }
+
+    func testRecipeIsItsOwnFormat() {
+        // .recipe files are XML plists but get a custom structured renderer
+        XCTAssertEqual(FileFormat(pathExtension: "recipe"), .recipe)
     }
 
     func testMobileconfig() {
