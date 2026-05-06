@@ -144,7 +144,7 @@
 					<string>io.macadmins.pique.ndjson</string>
 					<string>public.yaml</string>
 					<string>public.xml</string>
-					<string>io.toml</string>
+					<string>public.toml</string>
 					<string>com.apple.mobileconfig</string>
 					<string>com.apple.property-list</string>
 					<string>public.shell-script</string>
