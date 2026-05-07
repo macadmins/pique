@@ -21,7 +21,7 @@ enum AppearanceOverride: String, CaseIterable {
 }
 
 enum AppearanceSettings {
-    static let appGroupID = "group.io.macadmins.pique"
+    static let appGroupID = "group.io.macadmins.pique.apps"
     private static let key = "appearanceOverrides"
     private static let lineNumbersKey = "showLineNumbers"
 
