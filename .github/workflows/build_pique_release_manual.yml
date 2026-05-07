@@ -2,6 +2,8 @@ name: Build Pique Release (Manual)
 
 env:
   NOTARY_APP_PASSWORD: ${{ secrets.NOTARY_APP_PASSWORD_MAOS }}
+  PIQUE_PROFILE_NAME: ${{ secrets.PIQUE_PROVISION_PROFILE_NAME_MAOS }}
+  PIQUE_PREVIEW_PROFILE_NAME: ${{ secrets.PIQUE_PREVIEW_PROVISION_PROFILE_NAME_MAOS }}
 
 on: [workflow_dispatch]
 
@@ -35,6 +37,23 @@ jobs:
         keychain-password: ${{ github.run_id }}
         p12-file-base64: ${{ secrets.PKG_CERTIFICATES_P12_MAOS }}
         p12-password: ${{ secrets.PKG_CERTIFICATES_P12_PASSWORD_MAOS }}
+
+    - name: Install provisioning profiles
+      env:
+        PIQUE_PROFILE_B64: ${{ secrets.PIQUE_PROVISION_PROFILE_BASE64_MAOS }}
+        PREVIEW_PROFILE_B64: ${{ secrets.PIQUE_PREVIEW_PROVISION_PROFILE_BASE64_MAOS }}
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        mkdir -p "$PROFILE_DIR"
+        for pair in "pique:$PIQUE_PROFILE_B64" "preview:$PREVIEW_PROFILE_B64"; do
+          name="${pair%%:*}"
+          b64="${pair#*:}"
+          tmp="$(mktemp).provisionprofile"
+          printf '%s' "$b64" | base64 --decode > "$tmp"
+          uuid=$(security cms -D -i "$tmp" | plutil -extract UUID raw -)
+          cp "$tmp" "$PROFILE_DIR/$uuid.provisionprofile"
+          echo "Installed $name profile UUID=$uuid"
+        done
 
     - name: Run build package script
       run: ./build_pique.zsh "CREATE_PKG" "$NOTARY_APP_PASSWORD"

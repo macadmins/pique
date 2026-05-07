@@ -12,9 +12,12 @@
 		A100000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D100000000000003 /* Assets.xcassets */; };
 		A100000000000005 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000008 /* SyntaxHighlighter.swift */; };
 		A100000000000007 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000009 /* FileReader.swift */; };
+		A10000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
+		A10000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000B /* SettingsView.swift */; };
 		A200000000000004 /* PreviewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000005 /* PreviewProvider.swift */; };
 		A200000000000006 /* SyntaxHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000008 /* SyntaxHighlighter.swift */; };
 		A200000000000008 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000009 /* FileReader.swift */; };
+		A20000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
 		A300000000000001 /* PiquePreview.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D200000000000002 /* PiquePreview.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A400000000000001 /* FileFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000001 /* FileFormatTests.swift */; };
 		A400000000000002 /* FileReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000002 /* FileReaderTests.swift */; };
@@ -22,9 +25,6 @@
 		A400000000000004 /* FormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000004 /* FormattingTests.swift */; };
 		A400000000000005 /* HTMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000005 /* HTMLTests.swift */; };
 		A400000000000006 /* HighlightIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000000000006 /* HighlightIntegrationTests.swift */; };
-		A10000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
-		A20000000000000B /* AppearanceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000A /* AppearanceSettings.swift */; };
-		A10000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000B /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,7 +59,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		CC8B35442F6824C700C97855 /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
 		CC8B35472F6824DF00C97855 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D100000000000001 /* PiqueApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiqueApp.swift; sourceTree = "<group>"; };
 		D100000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -70,6 +69,10 @@
 		D100000000000007 /* PiquePreview.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PiquePreview.entitlements; sourceTree = "<group>"; };
 		D100000000000008 /* SyntaxHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxHighlighter.swift; sourceTree = "<group>"; };
 		D100000000000009 /* FileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReader.swift; sourceTree = "<group>"; };
+		D10000000000000A /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
+		D10000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		D10000000000000C /* Pique.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Pique.xcconfig; sourceTree = "<group>"; };
+		D10000000000000D /* PiquePreview.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = PiquePreview.xcconfig; sourceTree = "<group>"; };
 		D200000000000001 /* Pique.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pique.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D200000000000002 /* PiquePreview.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PiquePreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D200000000000003 /* PiqueTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PiqueTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,8 +82,6 @@
 		D300000000000004 /* FormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattingTests.swift; sourceTree = "<group>"; };
 		D300000000000005 /* HTMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLTests.swift; sourceTree = "<group>"; };
 		D300000000000006 /* HighlightIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightIntegrationTests.swift; sourceTree = "<group>"; };
-		D10000000000000A /* AppearanceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettings.swift; sourceTree = "<group>"; };
-		D10000000000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +128,7 @@
 				D10000000000000B /* SettingsView.swift */,
 				D100000000000003 /* Assets.xcassets */,
 				D100000000000004 /* Pique.entitlements */,
+				D10000000000000C /* Pique.xcconfig */,
 				CC8B35472F6824DF00C97855 /* SettingsView.swift */,
 			);
 			path = Pique;
@@ -138,6 +140,7 @@
 				D100000000000005 /* PreviewProvider.swift */,
 				D100000000000006 /* Info.plist */,
 				D100000000000007 /* PiquePreview.entitlements */,
+				D10000000000000D /* PiquePreview.xcconfig */,
 			);
 			path = PiquePreview;
 			sourceTree = "<group>";
@@ -240,7 +243,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 2630;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					B100000000000001 = {
 						CreatedOnToolsVersion = 15.4;
@@ -304,7 +307,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC8B35452F6824C700C97855 /* AppearanceSettings.swift in Sources */,
 				A100000000000001 /* PiqueApp.swift in Sources */,
 				A100000000000002 /* ContentView.swift in Sources */,
 				A10000000000000C /* SettingsView.swift in Sources */,
@@ -318,7 +320,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC8B35462F6824C700C97855 /* AppearanceSettings.swift in Sources */,
 				A200000000000004 /* PreviewProvider.swift in Sources */,
 				A200000000000006 /* SyntaxHighlighter.swift in Sources */,
 				A200000000000008 /* FileReader.swift in Sources */,
@@ -486,7 +487,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = N8GJ2Y5Z9T;
+				DEVELOPMENT_TEAM = D6G4X4D7C9;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readonly;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -516,6 +517,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -523,16 +525,14 @@
 		};
 		CF100000000000AR /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D10000000000000C /* Pique.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconRelease;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Pique/Pique.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = N8GJ2Y5Z9T;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_FILE_ACCESS_DOWNLOADS_FOLDER = readonly;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -561,7 +561,7 @@
 				MARKETING_VERSION = 0.1.0b4;
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -575,7 +575,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = N8GJ2Y5Z9T;
+				DEVELOPMENT_TEAM = D6G4X4D7C9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PiquePreview/Info.plist;
@@ -592,6 +592,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique.PiquePreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -600,13 +601,11 @@
 		};
 		CF200000000000AR /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D10000000000000D /* PiquePreview.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = PiquePreview/PiquePreview.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = N8GJ2Y5Z9T;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PiquePreview/Info.plist;
@@ -621,7 +620,7 @@
 				MARKETING_VERSION = 0.1.0b4;
 				PRODUCT_BUNDLE_IDENTIFIER = io.macadmins.pique.PiquePreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};

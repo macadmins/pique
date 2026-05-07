@@ -37,7 +37,11 @@ fi
 
 # Build Pique
 echo "Building Pique"
-$XCODE_BUILD -project "$TOOLSDIR/Pique.xcodeproj" -scheme "Pique" -configuration Release -derivedDataPath "$BUILDSDIR/DerivedData" CODE_SIGN_IDENTITY=$APP_SIGNING_IDENTITY OTHER_CODE_SIGN_FLAGS="--timestamp" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO
+if [ -z "$PIQUE_PROFILE_NAME" ] || [ -z "$PIQUE_PREVIEW_PROFILE_NAME" ]; then
+    echo "PIQUE_PROFILE_NAME and PIQUE_PREVIEW_PROFILE_NAME must be set for Release builds." 1>&2
+    exit 1
+fi
+$XCODE_BUILD -project "$TOOLSDIR/Pique.xcodeproj" -scheme "Pique" -configuration Release -derivedDataPath "$BUILDSDIR/DerivedData" CODE_SIGN_IDENTITY="$APP_SIGNING_IDENTITY" PIQUE_PROFILE_NAME="$PIQUE_PROFILE_NAME" PIQUE_PREVIEW_PROFILE_NAME="$PIQUE_PREVIEW_PROFILE_NAME" OTHER_CODE_SIGN_FLAGS="--timestamp" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO
 XCB_RESULT="$?"
 if [ "${XCB_RESULT}" != "0" ]; then
     echo "Error running xcodebuild: ${XCB_RESULT}" 1>&2

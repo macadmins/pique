@@ -44,6 +44,10 @@ On macOS 26, Quick Look extensions must be explicitly allowed. When you first la
 
 Go to **System Settings > Login Items & Extensions > Quick Look Extensions** and enable **Pique**.
 
+## Development
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for build and release notes, including how to prepare provisioning profiles for the GitHub Actions release workflow.
+
 ## License
 
 Copyright 2026 Declarative IT GmbH

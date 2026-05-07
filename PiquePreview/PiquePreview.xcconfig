@@ -1,0 +1,5 @@
+// Release signing for PiquePreview. Debug uses Automatic via pbxproj.
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM = T4SK8ZXCXG
+CODE_SIGN_IDENTITY = Developer ID Application
+PROVISIONING_PROFILE_SPECIFIER = $(PIQUE_PREVIEW_PROFILE_NAME)
