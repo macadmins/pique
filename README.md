@@ -8,15 +8,29 @@ Select a file in Finder, press Space, and get a formatted preview with proper sy
 
 ## Supported File Types
 
-| Format | Extensions |
-|---|---|
-| JSON | `.json` |
-| YAML | `.yaml`, `.yml` |
-| TOML | `.toml` |
-| XML | `.xml` |
-| Mobileconfig / Plist | `.mobileconfig`, `.plist` |
-| Shell | `.sh`, `.bash`, `.zsh`, `.ksh`, `.dash` |
-| PowerShell | `.ps1`, `.psm1`, `.psd1` |
+| Format | Extensions | |
+|---|---|---|
+| JSON | `.json` | |
+| YAML | `.yaml`, `.yml` | |
+| Mobileconfig / Plist | `.mobileconfig`, `.plist` | |
+| XML | `.xml` | |
+| Shell | `.sh`, `.bash`, `.zsh`, `.ksh`, `.dash`, `.rc`, `.command` | |
+| Markdown | `.md`, `.markdown` | ✨ New |
+| PowerShell | `.ps1`, `.psm1`, `.psd1` | |
+| TOML | `.toml`, `.lock` | |
+| Python | `.py`, `.pyw`, `.pyi` | ✨ New |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | ✨ New |
+| TypeScript | `.ts`, `.tsx`, `.d.ts` | ✨ New |
+| HCL / Terraform | `.tf`, `.tfvars`, `.hcl` | ✨ New |
+| Go | `.go` | ✨ New |
+| Rust | `.rs` | ✨ New |
+| Ruby | `.rb`, `.gemspec` | ✨ New |
+| NDJSON / JSON Lines | `.ndjson`, `.jsonl` | ✨ New |
+| AutoPkg Recipe | `.recipe` | ✨ New |
+| Apple VPP / Apps and Books Token | `.vpptoken` | ✨ New |
+| AsciiDoc | `.adoc` | ✨ New |
+
+Rows marked ✨ New were added after the initial release.
 
 Mobileconfig and plist files get a special HIG-inspired rendering with profile metadata, payload details, and formatted key-value pairs.
 
@@ -28,13 +42,13 @@ macOS 26.0 or later.
 
 ## Installation
 
-You can build from source with Xcode:
+Download and run the pkg installer from [Releases](../../releases).
+
+Optionally, you can build from source with Xcode:
 
 ```sh
 xcodebuild -project Pique.xcodeproj -scheme Pique -config Release
 ```
-
-Or use the pkg installer available in [Releases](../../releases).
 
 ## Enabling the Extension
 
@@ -43,6 +57,36 @@ On macOS 26, Quick Look extensions must be explicitly allowed. When you first la
 <img src="images/quicklook-extension-enable.png" alt="Quick Look Previewer Extension Added notification" width="350" />
 
 Go to **System Settings > Login Items & Extensions > Quick Look Extensions** and enable **Pique**.
+
+## Appearance Settings
+
+Open the **Pique** app and click the gear icon (⚙️) in the bottom-right corner to open **Appearance Settings**.
+
+- **Per-Format Appearance** — every format defaults to **System** (follows the macOS appearance). You can override an individual format to always render **Light** or **Dark** — for example, keep shell scripts dark while Markdown stays light.
+- **Show Line Numbers** — a global toggle that adds line numbers to code previews.
+
+Settings are stored in a shared App Group (`group.io.macadmins.pique.apps`), so the Quick Look extension picks up your changes on the next preview.
+
+## Renewing the Quick Look Cache
+
+macOS caches Quick Look previews and the list of registered generators. After installing or updating Pique — or if a supported file still shows the plain-text preview — renew the cache:
+
+```sh
+# Reset the thumbnail/preview cache and reload all generators
+qlmanage -r cache
+qlmanage -r
+
+# Restart Finder so it picks up the refreshed previews
+killall Finder
+```
+
+To confirm Pique is registered, list the active generators and look for `io.macadmins.pique`:
+
+```sh
+qlmanage -m | grep -i pique
+```
+
+If previews still don't update, log out and back in (or reboot) so macOS reloads the extension.
 
 ## Development
 
