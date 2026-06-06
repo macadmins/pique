@@ -88,6 +88,10 @@ qlmanage -m | grep -i pique
 
 If previews still don't update, log out and back in (or reboot) so macOS reloads the extension.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing code, reporting issues, and requesting new features.
+
 ## Development
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for build and release notes, including how to prepare provisioning profiles for the GitHub Actions release workflow.
