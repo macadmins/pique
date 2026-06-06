@@ -38,23 +38,6 @@ Please do not use AI tools as a substitute for understanding the project’s exi
 
 Maintainers may close pull requests that appear to be generated without sufficient understanding of the project, even if the underlying idea is reasonable.
 
-## Operating system coverage
-
-Where possible and applicable, contributors should try to support as many relevant operating systems as possible.
-
-For `Pique`, that usually means considering macOS, Windows, and Linux when designing a change. Not every feature will make sense on every operating system, and some data sources are inherently platform-specific. That is fine, but the issue or pull request should make the intended platform support clear.
-
-Linux support is encouraged where practical, but it is not a hard requirement for every contribution. We understand that many contributors may not have access to Linux devices for development or testing. If you cannot implement or test Linux support, please say so in the issue or pull request so maintainers or other contributors can help where appropriate.
-
-When proposing or submitting a change, please describe:
-
-- Which operating systems the change supports
-- Which operating systems were tested
-- Any known platform-specific limitations
-- Whether unsupported platforms fail safely or simply return no data
-- Whether the behavior is consistent with existing osquery conventions
-
-If a change is only intended for one operating system, please explain why.
 
 ## When a pull request is appropriate
 
