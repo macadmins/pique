@@ -1,12 +1,14 @@
 # Pique
 
-<img src="Pique/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" alt="Pique icon" width="128" height="128" />
+<img src="images/pique_icon.png" alt="Pique figure" width="256" height="256" />
 
 A macOS Quick Look extension for syntax-highlighted previews of configuration files and scripts.
 
 Select a file in Finder, press Space, and get a formatted preview with proper syntax highlighting to make your MacAdmin life easier — no need to open a text editor to glance at a config file.
 
+
 ## Supported File Types
+<img src="Pique/Assets.xcassets/AppIcon.appiconset/icon_128x128@2x.png" alt="Pique icon" width="128" height="128" />
 
 | Format | Extensions | |
 |---|---|---|
