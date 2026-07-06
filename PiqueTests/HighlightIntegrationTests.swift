@@ -225,6 +225,23 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains("first"), "Should render ordered list item content")
         XCTAssertTrue(html.contains("second"), "Should render ordered list item content")
     }
+    
+    func testMarkdownH1toH6Titles() {
+        let md = "# h1 title\n\n## h2 title\n\n### h3 title\n\n#### h4 title\n\n##### h5 title\n\n###### h6 title"
+        let html = SyntaxHighlighter.highlight(md, format: .markdown)
+        XCTAssertTrue(html.contains("<h1"), "Should render h1 for #")
+        XCTAssertTrue(html.contains("h1 title"))
+        XCTAssertTrue(html.contains("<h2"), "Should render h2 for ##")
+        XCTAssertTrue(html.contains("h2 title"))
+        XCTAssertTrue(html.contains("<h3"), "Should render h3 for ###")
+        XCTAssertTrue(html.contains("h3 title"))
+        XCTAssertTrue(html.contains("<h4"), "Should render h4 for ####")
+        XCTAssertTrue(html.contains("h4 title"))
+        XCTAssertTrue(html.contains("<h5"), "Should render h5 for #####")
+        XCTAssertTrue(html.contains("h5 title"))
+        XCTAssertTrue(html.contains("<h6"), "Should render h6 for ######")
+        XCTAssertTrue(html.contains("h6 title"))
+    }
 
     func testMarkdownHorizontalRule() {
         let md = "above\n\n---\n\nbelow"
