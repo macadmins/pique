@@ -340,4 +340,34 @@ final class HighlightIntegrationTests: XCTestCase {
         let html = body(SyntaxHighlighter.highlight(hcl, format: .hcl))
         XCTAssertTrue(html.contains(#"class="string""#))
     }
+
+    // MARK: - TeX / LaTeX
+
+    func testTeXCommandsEnvironmentsMathAndComments() {
+        let tex = #"""
+            \documentclass{article}
+            \begin{document}
+            $E = mc^2$ % explanation
+            \end{document}
+            """#
+        let html = body(SyntaxHighlighter.highlight(tex, format: .tex))
+        XCTAssertTrue(html.contains(#"<span class="keyword">\documentclass</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="tag">document</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="number">2</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="comment">% explanation</span>"#))
+    }
+
+    func testBibTeXEntryAndField() {
+        let bib = "@article{pique,\n  title = \"Pique\"\n}"
+        let html = body(SyntaxHighlighter.highlight(bib, format: .tex))
+        XCTAssertTrue(html.contains(#"<span class="tag">@article</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="key">title</span>"#))
+        XCTAssertTrue(html.contains(#"<span class="string">&quot;Pique&quot;</span>"#))
+    }
+
+    func testEscapedPercentIsNotAComment() {
+        let html = body(SyntaxHighlighter.highlight(#"Discount: 10\%"#, format: .tex))
+        XCTAssertFalse(html.contains(#"class="comment""#))
+        XCTAssertTrue(html.contains(#"<span class="keyword">\%</span>"#))
+    }
 }

@@ -82,6 +82,44 @@
 			<dict>
 				<key>UTTypeConformsTo</key>
 				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>UTTypeDescription</key>
+				<string>TeX Source</string>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.tex</string>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>tex</string>
+						<string>ltx</string>
+						<string>latex</string>
+						<string>sty</string>
+						<string>cls</string>
+						<string>dtx</string>
+						<string>ins</string>
+						<string>bib</string>
+						<string>bibtex</string>
+						<string>bst</string>
+						<string>bbx</string>
+						<string>cbx</string>
+						<string>lbx</string>
+						<string>tikz</string>
+						<string>texi</string>
+						<string>texinfo</string>
+						<string>txi</string>
+						<string>ctx</string>
+						<string>mkii</string>
+						<string>mkiv</string>
+						<string>mkvi</string>
+						<string>mkxl</string>
+					</array>
+				</dict>
+			</dict>
+			<dict>
+				<key>UTTypeConformsTo</key>
+				<array>
 					<string>public.xml</string>
 				</array>
 				<key>UTTypeDescription</key>

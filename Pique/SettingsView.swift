@@ -21,6 +21,7 @@ struct SettingsView: View {
         ("JavaScript",   "chevron.left.forwardslash.chevron.right", .yellow),
         ("Markdown",     "doc.richtext",                           .gray),
         ("HCL",          "doc.text",                               .indigo),
+        ("TeX",          "doc.text",                               .brown),
     ]
 
     @State private var overrides: [String: AppearanceOverride] = [:]

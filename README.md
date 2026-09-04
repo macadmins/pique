@@ -31,6 +31,7 @@ Select a file in Finder, press Space, and get a formatted preview with proper sy
 | AutoPkg Recipe | `.recipe` | ✨ New |
 | Apple VPP / Apps and Books Token | `.vpptoken` | ✨ New |
 | AsciiDoc | `.adoc` | ✨ New |
+| TeX / LaTeX | `.tex`, `.ltx`, `.latex`, `.sty`, `.cls`, `.dtx`, `.ins`, `.bib`, `.bibtex`, `.bst`, `.bbx`, `.cbx`, `.lbx`, `.tikz`, `.texi`, `.texinfo`, `.txi`, `.ctx`, `.mkii`, `.mkiv`, `.mkvi`, `.mkxl` | ✨ New |
 
 Rows marked ✨ New were added after the initial release.
 

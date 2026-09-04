@@ -7,7 +7,7 @@ import Foundation
 
 enum FileFormat {
     case json, yaml, toml, xml, mobileconfig, recipe, shell, powershell, python, ruby, go, rust,
-        javascript, markdown, hcl
+        javascript, markdown, hcl, tex
 
     init?(pathExtension: String) {
         switch pathExtension.lowercased() {
@@ -26,6 +26,9 @@ enum FileFormat {
         case "js", "jsx", "ts", "tsx", "mjs", "cjs": self = .javascript
         case "md", "markdown", "adoc": self = .markdown
         case "tf", "tfvars", "hcl": self = .hcl
+        case "tex", "ltx", "latex", "sty", "cls", "dtx", "ins", "bib", "bibtex", "bst", "bbx",
+            "cbx", "lbx", "tikz", "texi", "texinfo", "txi", "ctx", "mkii", "mkiv", "mkvi", "mkxl":
+            self = .tex
         default: return nil
         }
     }
@@ -66,6 +69,7 @@ enum SyntaxHighlighter {
         case .javascript: tokens = tokenizeJavaScript(source)
         case .markdown: return renderMarkdown(source, dark: darkMode)
         case .hcl: tokens = tokenizeHCL(source)
+        case .tex: tokens = tokenizeTeX(source)
         }
         return wrapHTML(renderTokens(tokens), dark: darkMode, showLineNumbers: showLineNumbers)
     }
@@ -1264,6 +1268,58 @@ enum SyntaxHighlighter {
                     Token(text: key, kind: .key), Token(text: ws, kind: .plain),
                     Token(text: eq, kind: .punctuation),
                 ]
+            }
+            return nil
+        }
+    }
+
+    // MARK: - TeX / LaTeX Tokenizer
+
+    private static func tokenizeTeX(_ src: String) -> [Token] {
+        let regex = try! Regex(
+            #"(?m)(%[^\n]*)"#  // 1: comment
+                + #"|(\\(?:begin|end)\s*\{)([^}\n]+)(\})"#  // 2-4: environment
+                + #"|(@[A-Za-z]+)(?=\s*[\{\(])"#  // 5: BibTeX entry type
+                + #"|^(\s*)([A-Za-z][\w-]*)(\s*=)"#  // 6-8: BibTeX field
+                + #"|(\\(?:[A-Za-z@]+(?:_[A-Za-z@]+)*(?::[A-Za-z]+)?|.))"#  // 9: command
+                + #"|(#[1-9])"#  // 10: macro parameter
+                + #"|\b(\d+(?:\.\d+)?)\b"#  // 11: number
+                + #"|([${}\[\]&_^~=+\-])"#  // 12: operator
+                + #"|(\"[^\"\n]*\")"#  // 13: BibTeX string
+                + #"|(@[A-Za-z]+)"#  // 14: Texinfo command
+                + #"|\b(ENTRY|FUNCTION|READ|ITERATE|SORT|EXECUTE|STRINGS|INTEGERS|MACRO|REVERSE)\b"#  // 15: BibTeX style keyword
+        )
+        return tokenize(src, regex: regex) { match in
+            if let comment = match[1] {
+                return [Token(text: comment, kind: .comment)]
+            } else if let command = match[2], let environment = match[3], let close = match[4] {
+                return [
+                    Token(text: command, kind: .keyword),
+                    Token(text: environment, kind: .tag),
+                    Token(text: close, kind: .operator),
+                ]
+            } else if let entryType = match[5] {
+                return [Token(text: entryType, kind: .tag)]
+            } else if let whitespace = match[6], let field = match[7], let equals = match[8] {
+                return [
+                    Token(text: whitespace, kind: .plain),
+                    Token(text: field, kind: .key),
+                    Token(text: equals, kind: .operator),
+                ]
+            } else if let command = match[9] {
+                return [Token(text: command, kind: .keyword)]
+            } else if let parameter = match[10] {
+                return [Token(text: parameter, kind: .variable)]
+            } else if let number = match[11] {
+                return [Token(text: number, kind: .number)]
+            } else if let op = match[12] {
+                return [Token(text: op, kind: .operator)]
+            } else if let string = match[13] {
+                return [Token(text: string, kind: .string)]
+            } else if let command = match[14] {
+                return [Token(text: command, kind: .keyword)]
+            } else if let keyword = match[15] {
+                return [Token(text: keyword, kind: .keyword)]
             }
             return nil
         }
