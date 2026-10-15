@@ -1317,6 +1317,12 @@ enum SyntaxHighlighter {
             } else if trimmed.hasPrefix("#### ") {
                 html +=
                     "<h4 style=\"font-size:15px; margin:12px 0 4px 0; color:\(muted);\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(5)))))</h4>"
+            } else if trimmed.hasPrefix("##### ") {
+                html +=
+                    "<h5 style=\"font-size:12px; margin:10px 0 4px 0; color:\(muted);\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(6)))))</h5>"
+            } else if trimmed.hasPrefix("###### ") {
+                html +=
+                    "<h6 style=\"font-size:10px; margin:8px 0 4px 0; color:\(muted);\">\(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(7)))))</h6>"
             } else if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") {
                 html +=
                     "<p style=\"margin:2px 0 2px 20px;\">&bull; \(inlineMarkdown(escapeHTML(String(trimmed.dropFirst(2)))))</p>"
