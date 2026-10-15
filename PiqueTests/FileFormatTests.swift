@@ -86,6 +86,18 @@ final class FileFormatTests: XCTestCase {
         }
     }
 
+    func testEnvFiles() {
+        let cases = [".env": "env", ".env.example": "env", "enroll.env": "env",
+                     "enroll.env.example": "env", "config.yaml.example": "yaml",
+                     ".gitignore": "gitignore", "notes.gitignore.txt": "txt"]
+        for (name, ext) in cases {
+            let url = URL(fileURLWithPath: "/tmp/\(name)")
+            XCTAssertEqual(FileFormat.effectiveExtension(of: url), ext, name)
+        }
+        XCTAssertEqual(FileFormat(pathExtension: "env"), .shell)
+        XCTAssertEqual(FileFormat(pathExtension: "gitignore"), .shell)
+    }
+
     // MARK: - Case insensitivity
 
     func testCaseInsensitive() {

@@ -31,6 +31,8 @@ Select a file in Finder, press Space, and get a formatted preview with proper sy
 | AutoPkg Recipe | `.recipe` | ✨ New |
 | Apple VPP / Apps and Books Token | `.vpptoken` | ✨ New |
 | AsciiDoc | `.adoc` | ✨ New |
+| Environment | `.env`, `.env.example` | ✨ New |
+| Git ignore | `.gitignore` | ✨ New |
 
 Rows marked ✨ New were added after the initial release.
 

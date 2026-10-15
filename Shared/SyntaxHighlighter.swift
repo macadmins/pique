@@ -17,7 +17,7 @@ enum FileFormat {
         case "toml", "lock": self = .toml
         case "xml": self = .xml
         case "mobileconfig", "plist": self = .mobileconfig
-        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": self = .shell
+        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command", "env", "gitignore": self = .shell
         case "ps1", "psm1", "psd1": self = .powershell
         case "py", "pyw", "pyi": self = .python
         case "rb", "gemspec", "rakefile": self = .ruby
@@ -27,6 +27,18 @@ enum FileFormat {
         case "md", "markdown", "adoc": self = .markdown
         case "tf", "tfvars", "hcl": self = .hcl
         default: return nil
+        }
+    }
+
+    /// Extension used for format detection: known dotfiles (`.env`, `.gitignore`) map to their
+    /// name, and a trailing `.example` is peeled off so `.env.example` / `config.yaml.example`
+    /// use the inner type.
+    static func effectiveExtension(of url: URL) -> String {
+        let base = url.pathExtension.lowercased() == "example" ? url.deletingPathExtension() : url
+        switch base.lastPathComponent.lowercased() {
+        case ".env": return "env"
+        case ".gitignore": return "gitignore"
+        default: return base.pathExtension
         }
     }
 }
@@ -88,7 +100,7 @@ enum SyntaxHighlighter {
     /// and handling DDM declaration "Payload" key
     static func extractSettings(_ payload: [String: Any]) -> [String: Any] {
         // DDM declaration: settings live under "Payload"
-        if payload["Type"] as? String != nil,
+        if payload["Type"] is String,
             let ddmPayload = payload["Payload"] as? [String: Any]
         {
             return ddmPayload
@@ -784,14 +796,14 @@ enum SyntaxHighlighter {
                     let isLast = j == keys.count - 1
                     if isSimple(val) && !isLongString(val) {
                         h += cellRow(key, inlineValue(val, key: key, t: t), t: t, last: isLast)
-                    } else if isLongString(val) {
+                    } else if let str = val as? String, isLongString(str) {
                         h +=
                             "<tr bgcolor=\"\(t.cell)\"><td colspan=\"2\" style=\"padding: 9px \(pad)px 3px \(pad)px;\">"
                         h += "<font size=\"2\" color=\"\(t.key)\">\(esc(key))</font></td></tr>"
                         h +=
                             "<tr bgcolor=\"\(t.cell)\"><td colspan=\"2\" style=\"padding: 0 \(pad)px 9px \(pad)px;\">"
                         h +=
-                            "<font size=\"1\" face=\"Menlo\" color=\"\(t.label)\">\(esc(val as! String))</font></td></tr>"
+                            "<font size=\"1\" face=\"Menlo\" color=\"\(t.label)\">\(esc(str))</font></td></tr>"
                         if !isLast { h += thinSep(t) }
                     } else {
                         h +=

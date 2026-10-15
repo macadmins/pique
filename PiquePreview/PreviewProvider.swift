@@ -33,8 +33,15 @@ class PreviewProvider: NSViewController, QLPreviewingController {
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
         do {
+            let ext = FileFormat.effectiveExtension(of: url)
+            // We claim public.data only for extensionless dotfiles (.env, .gitignore); decline
+            // any other generic file before reading it so Quick Look shows its default preview.
+            if (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType == .data,
+               FileFormat(pathExtension: ext) == nil {
+                throw CocoaError(.featureUnsupported)
+            }
             var data = try FileReader.readData(url: url)
-            let extLower = url.pathExtension.lowercased()
+            let extLower = ext.lowercased()
             let nameLower = url.lastPathComponent.lowercased()
             // .recipe (XML), .recipe.plist (override), and .recipe.yaml (YAML recipe)
             // all flow through the structured renderer. Pathological extensions like
@@ -44,7 +51,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 || nameLower.hasSuffix(".recipe.yaml")
             let format: FileFormat = isAutoPkgRecipe
                 ? .recipe
-                : (FileFormat(pathExtension: url.pathExtension) ?? .json)
+                : (FileFormat(pathExtension: ext) ?? .json)
 
             // Step 1: Strip CMS signature from signed mobileconfig files
             if format == .mobileconfig, FileReader.isCMSEnvelope(data),
@@ -66,7 +73,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
 
             let formatName = isAutoPkgRecipe
                 ? "AutoPkg"
-                : PreviewProvider.formatName(for: url.pathExtension)
+                : PreviewProvider.formatName(for: ext)
             let isDark: Bool
             switch AppearanceSettings.override(forFormat: formatName) {
             case .system:
@@ -83,7 +90,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 darkMode: isDark,
                 showLineNumbers: showLineNumbers
             )
-            if url.pathExtension.lowercased() == "vpptoken",
+            if extLower == "vpptoken",
                let info = FileReader.vppTokenInfo(data) {
                 let banner = PreviewProvider.vppTokenBanner(info: info, dark: isDark)
                 html = html.replacingOccurrences(of: "<body>", with: "<body>\(banner)")
@@ -185,7 +192,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         case "toml", "lock":                                     return "TOML"
         case "xml":                                              return "XML"
         case "mobileconfig", "plist":                            return "mobileconfig"
-        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command": return "Shell"
+        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command", "env", "gitignore": return "Shell"
         case "ps1", "psm1", "psd1":                              return "PowerShell"
         case "py", "pyw", "pyi":                                 return "Python"
         case "rb":                                               return "Ruby"

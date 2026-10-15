@@ -1,0 +1,24 @@
+excluded:
+  - build
+
+disabled_rules:
+  - identifier_name  # short names (t = theme, h = html, i) are idiomatic in the renderers
+  - opening_brace    # multi-line conditions put `{` on its own line
+  - trailing_comma
+
+# Static regex literals can't fail at runtime; keep them visible, not blocking.
+force_try: warning
+
+# Errors only for outliers; defaults still warn.
+line_length:
+  warning: 160
+  error: 500
+file_length:
+  warning: 1000
+  error: 2500
+type_body_length:
+  warning: 350
+  error: 1600
+function_body_length:
+  warning: 50
+  error: 200

@@ -131,6 +131,24 @@
 					</array>
 				</dict>
 			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.env</string>
+				<key>UTTypeDescription</key>
+				<string>Environment Variables File</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>env</string>
+						<string>example</string>
+					</array>
+				</dict>
+			</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -164,6 +182,8 @@
 					<string>io.macadmins.pique.recipe</string>
 					<string>io.macadmins.pique.vpptoken</string>
 					<string>com.apple.terminal.shell-script</string>
+					<string>io.macadmins.pique.env</string>
+					<string>public.data</string>
 				</array>
 				<key>QLFileExtensions</key>
 				<array>
@@ -203,6 +223,8 @@
 					<string>hcl</string>
 					<string>recipe</string>
 					<string>vpptoken</string>
+					<string>env</string>
+					<string>example</string>
 				</array>
 				<key>QLPreviewWidth</key>
 				<real>1024</real>
