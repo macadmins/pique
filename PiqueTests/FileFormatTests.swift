@@ -86,6 +86,16 @@ final class FileFormatTests: XCTestCase {
         }
     }
 
+    func testTeX() {
+        let extensions = [
+            "tex", "ltx", "latex", "sty", "cls", "dtx", "ins", "bib", "bibtex", "bst", "bbx",
+            "cbx", "lbx", "tikz", "texi", "texinfo", "txi", "ctx", "mkii", "mkiv", "mkvi", "mkxl",
+        ]
+        for ext in extensions {
+            XCTAssertEqual(FileFormat(pathExtension: ext), .tex, "Expected .tex for .\(ext)")
+        }
+    }
+
     // MARK: - Case insensitivity
 
     func testCaseInsensitive() {
@@ -93,6 +103,7 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "YAML"), .yaml)
         XCTAssertEqual(FileFormat(pathExtension: "Toml"), .toml)
         XCTAssertEqual(FileFormat(pathExtension: "SH"), .shell)
+        XCTAssertEqual(FileFormat(pathExtension: "TEX"), .tex)
     }
 
     // MARK: - Unknown / empty
