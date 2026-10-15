@@ -100,7 +100,7 @@ enum SyntaxHighlighter {
     /// and handling DDM declaration "Payload" key
     static func extractSettings(_ payload: [String: Any]) -> [String: Any] {
         // DDM declaration: settings live under "Payload"
-        if payload["Type"] as? String != nil,
+        if payload["Type"] is String,
             let ddmPayload = payload["Payload"] as? [String: Any]
         {
             return ddmPayload
@@ -796,14 +796,14 @@ enum SyntaxHighlighter {
                     let isLast = j == keys.count - 1
                     if isSimple(val) && !isLongString(val) {
                         h += cellRow(key, inlineValue(val, key: key, t: t), t: t, last: isLast)
-                    } else if isLongString(val) {
+                    } else if let str = val as? String, isLongString(str) {
                         h +=
                             "<tr bgcolor=\"\(t.cell)\"><td colspan=\"2\" style=\"padding: 9px \(pad)px 3px \(pad)px;\">"
                         h += "<font size=\"2\" color=\"\(t.key)\">\(esc(key))</font></td></tr>"
                         h +=
                             "<tr bgcolor=\"\(t.cell)\"><td colspan=\"2\" style=\"padding: 0 \(pad)px 9px \(pad)px;\">"
                         h +=
-                            "<font size=\"1\" face=\"Menlo\" color=\"\(t.label)\">\(esc(val as! String))</font></td></tr>"
+                            "<font size=\"1\" face=\"Menlo\" color=\"\(t.label)\">\(esc(str))</font></td></tr>"
                         if !isLast { h += thinSep(t) }
                     } else {
                         h +=

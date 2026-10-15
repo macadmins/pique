@@ -225,7 +225,7 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains("first"), "Should render ordered list item content")
         XCTAssertTrue(html.contains("second"), "Should render ordered list item content")
     }
-    
+
     func testMarkdownH1toH6Titles() {
         let md = "# h1 title\n\n## h2 title\n\n### h3 title\n\n#### h4 title\n\n##### h5 title\n\n###### h6 title"
         let html = SyntaxHighlighter.highlight(md, format: .markdown)

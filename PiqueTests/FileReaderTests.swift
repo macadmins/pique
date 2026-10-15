@@ -136,7 +136,7 @@ final class FileReaderTests: XCTestCase {
         let bplist = Data([0x62, 0x70, 0x6c, 0x69, 0x73, 0x74, 0x30, 0x30])
         XCTAssertTrue(FileReader.isBinaryPlist(bplist))
 
-        let xml = "<?xml version=\"1.0\"".data(using: .utf8)!
+        let xml = Data("<?xml version=\"1.0\"".utf8)
         XCTAssertFalse(FileReader.isBinaryPlist(xml))
     }
 
@@ -169,7 +169,7 @@ final class FileReaderTests: XCTestCase {
         fakeEnvelope.append(Data(count: 10))
         XCTAssertTrue(FileReader.isCMSEnvelope(fakeEnvelope))
 
-        let plainXML = "<?xml version=\"1.0\"?>".data(using: .utf8)!
+        let plainXML = Data("<?xml version=\"1.0\"?>".utf8)
         XCTAssertFalse(FileReader.isCMSEnvelope(plainXML))
     }
 
@@ -179,7 +179,7 @@ final class FileReaderTests: XCTestCase {
     }
 
     func testStripCMSSignatureReturnsNilForNonCMS() {
-        let plainXML = "<?xml version=\"1.0\"?><plist></plist>".data(using: .utf8)!
+        let plainXML = Data("<?xml version=\"1.0\"?><plist></plist>".utf8)
         XCTAssertNil(FileReader.stripCMSSignature(from: plainXML))
     }
 
