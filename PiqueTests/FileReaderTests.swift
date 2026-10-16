@@ -173,6 +173,23 @@ final class FileReaderTests: XCTestCase {
         XCTAssertFalse(FileReader.isCMSEnvelope(plainXML))
     }
 
+    func testReindentJSON() {
+        let minified = #"{"b":1,"a":[1,2.50,{}],"s":"x,{y}:\"z\"","e":[]}"#
+        let expected = """
+            {
+              "b": 1,
+              "a": [
+                1,
+                2.50,
+                {}
+              ],
+              "s": "x,{y}:\\"z\\"",
+              "e": []
+            }
+            """
+        XCTAssertEqual(FileReader.reindentJSON(minified), expected)
+    }
+
     func testIsCMSEnvelopeTooShort() {
         let short = Data([0x06, 0x09, 0x2a])
         XCTAssertFalse(FileReader.isCMSEnvelope(short))

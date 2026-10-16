@@ -60,7 +60,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             }
 
             // Step 2: Convert source bytes to displayable text
-            let text: String
+            var text: String
             if extLower == "vpptoken",
                let json = FileReader.decodeVPPToken(data) {
                 text = json
@@ -69,6 +69,10 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 text = xml
             } else {
                 text = FileReader.decodeToString(data)
+            }
+            // Minified (single-line) JSON is re-indented; .ndjson/.jsonl keep one record per line.
+            if extLower == "json", !text.trimmingCharacters(in: .whitespacesAndNewlines).contains("\n") {
+                text = FileReader.reindentJSON(text)
             }
 
             let formatName = isAutoPkgRecipe
