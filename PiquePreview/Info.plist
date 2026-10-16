@@ -149,6 +149,23 @@
 					</array>
 				</dict>
 			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.conf</string>
+				<key>UTTypeDescription</key>
+				<string>Configuration File</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>conf</string>
+					</array>
+				</dict>
+			</dict>
 		</array>
 		<key>NSExtension</key>
 		<dict>
@@ -183,6 +200,8 @@
 					<string>io.macadmins.pique.vpptoken</string>
 					<string>com.apple.terminal.shell-script</string>
 					<string>io.macadmins.pique.env</string>
+					<string>io.macadmins.pique.conf</string>
+					<string>com.coderunnerapp.config-file</string>
 					<string>public.data</string>
 				</array>
 				<key>QLFileExtensions</key>
@@ -225,6 +244,7 @@
 					<string>vpptoken</string>
 					<string>env</string>
 					<string>example</string>
+					<string>conf</string>
 				</array>
 				<key>QLPreviewWidth</key>
 				<real>1024</real>

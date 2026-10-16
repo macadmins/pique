@@ -33,6 +33,7 @@ Select a file in Finder, press Space, and get a formatted preview with proper sy
 | AsciiDoc | `.adoc` | ✨ New |
 | Environment | `.env`, `.env.example` | ✨ New |
 | Git ignore | `.gitignore` | ✨ New |
+| Config | `.conf` | ✨ New |
 
 Rows marked ✨ New were added after the initial release.
 
