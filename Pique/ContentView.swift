@@ -71,6 +71,25 @@ struct ContentView: View {
             .padding(16)
             .help("Appearance Settings (⌘,)")
         }
+        .overlay(alignment: .bottomLeading) {
+            Link(destination: URL(string: "https://github.com/sponsors/macadmins")!) {
+                Label {
+                    HStack(spacing: 2) {
+                        Text("Thanks to our donors on GitHub").underline()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption2)
+                    }
+                } icon: {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.pink)
+                }
+                .font(.callout)
+            }
+            .foregroundStyle(.link)
+            .pointerStyle(.link)
+            .padding(16)
+            .help("github.com/sponsors/macadmins")
+        }
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
