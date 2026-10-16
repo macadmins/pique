@@ -44,7 +44,10 @@ enum FileFormat {
 }
 
 enum SyntaxHighlighter {
-    static func highlight(_ source: String, format: FileFormat, darkMode: Bool = false, showLineNumbers: Bool = false) -> String {
+    static func highlight(
+        _ source: String, format: FileFormat, darkMode: Bool = false,
+        showLineNumbers: Bool = false, showFinalNewline: Bool = false
+    ) -> String {
         if format == .mobileconfig, let data = source.data(using: .utf8) {
             if let html = renderMobileconfig(data, dark: darkMode) {
                 return html
@@ -79,7 +82,13 @@ enum SyntaxHighlighter {
         case .markdown: return renderMarkdown(source, dark: darkMode)
         case .hcl: tokens = tokenizeHCL(source)
         }
-        return wrapHTML(renderTokens(tokens), dark: darkMode, showLineNumbers: showLineNumbers)
+        var body = renderTokens(tokens)
+        // A trailing newline renders as nothing; mark it so its presence (or absence) is visible.
+        if showFinalNewline, body.last?.isNewline == true {
+            body.removeLast()
+            body += "<span class=\"eol\">↵</span>\n"
+        }
+        return wrapHTML(body, dark: darkMode, showLineNumbers: showLineNumbers)
     }
 
     // MARK: - Mobileconfig Renderer
@@ -1675,6 +1684,7 @@ enum SyntaxHighlighter {
                 .keyword   { color: #c586c0; }
                 .operator  { color: #abb2bf; }
                 .command   { color: #61afef; }
+                .eol       { color: #636366; }
                 """
         } else {
             colors = """
@@ -1692,6 +1702,7 @@ enum SyntaxHighlighter {
                 .keyword   { color: #af00db; }
                 .operator  { color: #383a42; }
                 .command   { color: #4078f2; }
+                .eol       { color: #94a3b8; }
                 """
         }
         return """

@@ -24,6 +24,7 @@ enum AppearanceSettings {
     static let appGroupID = "group.io.macadmins.pique.apps"
     private static let key = "appearanceOverrides"
     private static let lineNumbersKey = "showLineNumbers"
+    private static let finalNewlineKey = "showFinalNewline"
 
     private static var defaults: UserDefaults {
         UserDefaults(suiteName: appGroupID) ?? .standard
@@ -33,6 +34,12 @@ enum AppearanceSettings {
     static var showLineNumbers: Bool {
         get { defaults.bool(forKey: lineNumbersKey) }
         set { defaults.set(newValue, forKey: lineNumbersKey) }
+    }
+
+    /// Whether to mark the file's final newline with a visible ↵.
+    static var showFinalNewline: Bool {
+        get { defaults.bool(forKey: finalNewlineKey) }
+        set { defaults.set(newValue, forKey: finalNewlineKey) }
     }
 
     /// Returns the stored appearance override for a format group name, defaulting to `.system`.

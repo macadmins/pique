@@ -92,7 +92,8 @@ class PreviewProvider: NSViewController, QLPreviewingController {
                 text,
                 format: format,
                 darkMode: isDark,
-                showLineNumbers: showLineNumbers
+                showLineNumbers: showLineNumbers,
+                showFinalNewline: AppearanceSettings.showFinalNewline
             )
             if extLower == "vpptoken",
                let info = FileReader.vppTokenInfo(data) {

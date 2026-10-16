@@ -243,6 +243,14 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(html.contains("h6 title"))
     }
 
+    func testFinalNewlineMarker() {
+        let marker = #"<span class="eol">↵</span>"#
+        XCTAssertTrue(body(SyntaxHighlighter.highlight("a=1\n", format: .shell, showFinalNewline: true)).contains(marker + "\n"))
+        XCTAssertTrue(body(SyntaxHighlighter.highlight("a=1\r\n", format: .shell, showFinalNewline: true)).contains(marker))
+        XCTAssertFalse(body(SyntaxHighlighter.highlight("a=1", format: .shell, showFinalNewline: true)).contains(marker))
+        XCTAssertFalse(body(SyntaxHighlighter.highlight("a=1\n", format: .shell)).contains(marker))
+    }
+
     func testMarkdownHorizontalRule() {
         let md = "above\n\n---\n\nbelow"
         let html = SyntaxHighlighter.highlight(md, format: .markdown)
