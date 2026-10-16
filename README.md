@@ -65,7 +65,7 @@ Go to **System Settings > Login Items & Extensions > Quick Look Extensions** and
 
 ## Appearance Settings
 
-Open the **Pique** app and click the gear icon (⚙️) in the bottom-right corner to open **Appearance Settings**.
+Open the **Pique** app and click the gear icon (⚙️) in the bottom-right corner — or press **⌘,** — to open **Appearance Settings**.
 
 - **Per-Format Appearance** — every format defaults to **System** (follows the macOS appearance). You can override an individual format to always render **Light** or **Dark** — for example, keep shell scripts dark while Markdown stays light.
 - **Show Line Numbers** — a global toggle that adds line numbers to code previews.

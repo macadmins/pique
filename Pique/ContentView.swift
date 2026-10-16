@@ -53,8 +53,9 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(",", modifiers: .command)
             .padding(16)
-            .help("Appearance Settings")
+            .help("Appearance Settings (⌘,)")
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
