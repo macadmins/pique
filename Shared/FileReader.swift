@@ -119,6 +119,58 @@ enum FileReader {
         return String(data: pretty, encoding: .utf8)
     }
 
+    /// Re-indents minified JSON without parsing it, so key order and number
+    /// formatting stay exactly as written. Empty `{}` / `[]` stay compact.
+    static func reindentJSON(_ src: String, indent: String = "  ") -> String {
+        let chars = Array(src)
+        var out = ""
+        var level = 0
+        var inString = false
+        var escaped = false
+        var i = 0
+        func newline() { out += "\n" + String(repeating: indent, count: level) }
+        while i < chars.count {
+            let c = chars[i]
+            if inString {
+                out.append(c)
+                if escaped { escaped = false } else if c == "\\" { escaped = true } else if c == "\"" { inString = false }
+                i += 1
+                continue
+            }
+            switch c {
+            case "\"":
+                inString = true
+                out.append(c)
+            case "{", "[":
+                var next = i + 1
+                while next < chars.count, chars[next].isWhitespace { next += 1 }
+                if next < chars.count, chars[next] == (c == "{" ? "}" : "]") {
+                    out += "\(c)\(chars[next])"
+                    i = next
+                } else {
+                    out.append(c)
+                    level += 1
+                    newline()
+                }
+            case "}", "]":
+                level = max(0, level - 1)
+                newline()
+                out.append(c)
+            case ",":
+                out.append(c)
+                newline()
+            case ":":
+                out += ": "
+            case let ws where ws.isWhitespace:
+                break
+            default:
+                out.append(c)
+            }
+            i += 1
+        }
+        return out
+    }
+
     enum FileReaderError: LocalizedError {
         case fileTooLarge(UInt64)
 
