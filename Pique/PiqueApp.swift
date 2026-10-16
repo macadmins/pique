@@ -11,7 +11,7 @@ struct PiqueApp: App {
         WindowGroup {
             ContentView()
         }
-        .defaultSize(width: 700, height: 350)
+        .defaultSize(width: 720, height: 420)
         .windowResizability(.contentSize)
     }
 }
