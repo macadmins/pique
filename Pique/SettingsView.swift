@@ -12,6 +12,7 @@ struct SettingsView: View {
         ("TOML",         "doc.text",                               .blue),
         ("XML",          "doc.text",                               .green),
         ("mobileconfig", "lock.doc",                               .red),
+        ("AutoPkg",      "shippingbox",                            .brown),
         ("Shell",        "terminal",                               .mint),
         ("PowerShell",   "terminal",                               .blue),
         ("Python",       "chevron.left.forwardslash.chevron.right", .cyan),
@@ -26,6 +27,10 @@ struct SettingsView: View {
     @State private var overrides: [String: AppearanceOverride] = [:]
     @State private var showLineNumbers: Bool = false
     @State private var showFinalNewline: Bool = false
+    @State private var fontScale: Double = 1
+    @State private var codeFontFamily: String = ""
+    private let fontScales: [Double] = [0.85, 1, 1.15, 1.3, 1.5, 2]
+    private let codeFonts = ["", "SF Mono", "Menlo", "Monaco", "Courier New"]
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -53,6 +58,22 @@ struct SettingsView: View {
                         .onChange(of: showFinalNewline) {
                             AppearanceSettings.showFinalNewline = showFinalNewline
                         }
+                    Picker("Text Size", selection: $fontScale) {
+                        ForEach(fontScales, id: \.self) { scale in
+                            Text("\(Int((scale * 100).rounded())) %").tag(scale)
+                        }
+                    }
+                    .onChange(of: fontScale) {
+                        AppearanceSettings.fontScale = fontScale
+                    }
+                    Picker("Code Font", selection: $codeFontFamily) {
+                        ForEach(codeFonts, id: \.self) { family in
+                            Text(family.isEmpty ? "Default" : family).tag(family)
+                        }
+                    }
+                    .onChange(of: codeFontFamily) {
+                        AppearanceSettings.codeFontFamily = codeFontFamily
+                    }
                 }
 
                 Section("Per-Format Appearance") {
@@ -91,6 +112,8 @@ struct SettingsView: View {
         overrides = loaded
         showLineNumbers = AppearanceSettings.showLineNumbers
         showFinalNewline = AppearanceSettings.showFinalNewline
+        fontScale = AppearanceSettings.fontScale
+        codeFontFamily = AppearanceSettings.codeFontFamily
     }
 }
 

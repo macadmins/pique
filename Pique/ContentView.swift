@@ -7,24 +7,37 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showSettings = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let formats = [
+    private let formats: [(String, String, Color)] = [
         ("JSON", "doc.text", Color.orange),
         ("YAML", "doc.text", Color.purple),
         ("TOML", "doc.text", Color.blue),
         ("XML", "doc.text", Color.green),
         ("mobileconfig", "lock.doc", Color.red),
         ("VPP token", "key.fill", Color.yellow),
+        ("AutoPkg", "shippingbox", Color.brown),
         ("Shell", "terminal", Color.mint),
+        ("PowerShell", "terminal", Color.blue),
         ("Python", "chevron.left.forwardslash.chevron.right", Color.cyan),
+        ("JavaScript / TS", "chevron.left.forwardslash.chevron.right", Color.yellow),
         ("HCL", "doc.text", Color.indigo),
+        ("Markdown", "doc.richtext", Color.gray),
+        ("Env / Config", "slider.horizontal.3", Color.teal),
     ]
 
     var body: some View {
         VStack(spacing: 24) {
             Image(systemName: "eye.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.orange, .purple, .blue],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .symbolEffect(.breathe.plain, options: .speed(0.5), isActive: !reduceMotion)
 
             Text("Pique")
                 .font(.largeTitle.bold())
@@ -34,7 +47,8 @@ struct ContentView: View {
 
             VStack(spacing: 10) {
                 formatChipsRow(formats.prefix(5))
-                formatChipsRow(formats.dropFirst(5))
+                formatChipsRow(formats.dropFirst(5).prefix(4))
+                formatChipsRow(formats.dropFirst(9))
             }
 
             Text("Select a supported file in Finder and press Space to preview.")
@@ -53,8 +67,28 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(",", modifiers: .command)
             .padding(16)
-            .help("Appearance Settings")
+            .help("Appearance Settings (⌘,)")
+        }
+        .overlay(alignment: .bottomLeading) {
+            Link(destination: URL(string: "https://github.com/sponsors/macadmins")!) {
+                Label {
+                    HStack(spacing: 2) {
+                        Text("Thanks to our donors on GitHub").underline()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption2)
+                    }
+                } icon: {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.pink)
+                }
+                .font(.callout)
+            }
+            .foregroundStyle(.link)
+            .pointerStyle(.link)
+            .padding(16)
+            .help("github.com/sponsors/macadmins")
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
