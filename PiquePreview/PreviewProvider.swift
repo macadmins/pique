@@ -204,7 +204,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         case "go":                                               return "Go"
         case "rs":                                               return "Rust"
         case "js", "jsx", "ts", "tsx", "mjs", "cjs":            return "JavaScript"
-        case "md", "markdown", "adoc":                           return "Markdown"
+        case "md", "markdown", "mdx", "adoc":                    return "Markdown"
         case "tf", "tfvars", "hcl":                              return "HCL"
         default:                                                  return ext
         }

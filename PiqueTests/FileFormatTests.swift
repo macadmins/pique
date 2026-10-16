@@ -78,6 +78,7 @@ final class FileFormatTests: XCTestCase {
         XCTAssertEqual(FileFormat(pathExtension: "md"), .markdown)
         XCTAssertEqual(FileFormat(pathExtension: "markdown"), .markdown)
         XCTAssertEqual(FileFormat(pathExtension: "adoc"), .markdown)
+        XCTAssertEqual(FileFormat(pathExtension: "mdx"), .markdown)
     }
 
     func testHCL() {

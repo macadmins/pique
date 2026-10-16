@@ -17,7 +17,7 @@ Select a file in Finder, press Space, and get a formatted preview with proper sy
 | Mobileconfig / Plist | `.mobileconfig`, `.plist` | |
 | XML | `.xml` | |
 | Shell | `.sh`, `.bash`, `.zsh`, `.ksh`, `.dash`, `.rc`, `.command` | |
-| Markdown | `.md`, `.markdown` | ✨ New |
+| Markdown | `.md`, `.markdown`, `.mdx` | ✨ New |
 | PowerShell | `.ps1`, `.psm1`, `.psd1` | |
 | TOML | `.toml`, `.lock` | |
 | Python | `.py`, `.pyw`, `.pyi` | ✨ New |
