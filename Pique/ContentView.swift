@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showSettings = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let formats: [(String, String, Color)] = [
         ("JSON", "doc.text", Color.orange),
@@ -29,7 +30,14 @@ struct ContentView: View {
         VStack(spacing: 24) {
             Image(systemName: "eye.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.orange, .purple, .blue],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .symbolEffect(.breathe.plain, options: .speed(0.5), isActive: !reduceMotion)
 
             Text("Pique")
                 .font(.largeTitle.bold())
