@@ -24,7 +24,7 @@ enum FileFormat {
         case "go": self = .go
         case "rs": self = .rust
         case "js", "jsx", "ts", "tsx", "mjs", "cjs": self = .javascript
-        case "md", "markdown", "adoc": self = .markdown
+        case "md", "markdown", "mdx", "adoc": self = .markdown
         case "tf", "tfvars", "hcl": self = .hcl
         default: return nil
         }

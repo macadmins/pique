@@ -62,6 +62,23 @@
 			</dict>
 			<dict>
 				<key>UTTypeIdentifier</key>
+				<string>io.macadmins.pique.mdx</string>
+				<key>UTTypeDescription</key>
+				<string>MDX Document</string>
+				<key>UTTypeConformsTo</key>
+				<array>
+					<string>public.plain-text</string>
+				</array>
+				<key>UTTypeTagSpecification</key>
+				<dict>
+					<key>public.filename-extension</key>
+					<array>
+						<string>mdx</string>
+					</array>
+				</dict>
+			</dict>
+			<dict>
+				<key>UTTypeIdentifier</key>
 				<string>io.macadmins.pique.hcl</string>
 				<key>UTTypeDescription</key>
 				<string>HCL / Terraform Configuration</string>
@@ -178,6 +195,8 @@
 					<string>io.macadmins.pique.typescript</string>
 					<string>io.macadmins.pique.asciidoc</string>
 					<string>net.daringfireball.markdown</string>
+					<string>io.macadmins.pique.mdx</string>
+					<string>net.ia.markdown</string>
 					<string>io.macadmins.pique.hcl</string>
 					<string>io.macadmins.pique.recipe</string>
 					<string>io.macadmins.pique.vpptoken</string>
@@ -217,6 +236,7 @@
 					<string>tsx</string>
 					<string>md</string>
 					<string>markdown</string>
+					<string>mdx</string>
 					<string>adoc</string>
 					<string>tf</string>
 					<string>tfvars</string>
