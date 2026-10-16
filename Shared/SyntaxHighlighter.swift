@@ -1712,13 +1712,14 @@ enum SyntaxHighlighter {
             <meta charset="utf-8">
             <style>
             body {
-                font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
                 margin: 0;
                 padding: 16px 20px;
                 background: \(bg);
                 color: \(fg);
             }
             pre {
+                /* Set on pre, not body: the default stylesheet gives pre its own monospace (Courier). */
+                font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
                 margin: 0;
                 white-space: pre-wrap;
                 word-wrap: break-word;

@@ -1,4 +1,5 @@
 import XCTest
+import AppKit
 @testable import Pique
 
 final class HighlightIntegrationTests: XCTestCase {
@@ -249,6 +250,33 @@ final class HighlightIntegrationTests: XCTestCase {
         XCTAssertTrue(body(SyntaxHighlighter.highlight("a=1\r\n", format: .shell, showFinalNewline: true)).contains(marker))
         XCTAssertFalse(body(SyntaxHighlighter.highlight("a=1", format: .shell, showFinalNewline: true)).contains(marker))
         XCTAssertFalse(body(SyntaxHighlighter.highlight("a=1\n", format: .shell)).contains(marker))
+    }
+
+    func testCodePreviewFontIsNotCourier() {
+        let html = SyntaxHighlighter.highlight("key: value", format: .yaml)
+        let attr = NSAttributedString(html: Data(html.utf8), documentAttributes: nil)
+        let font = attr?.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+        XCTAssertEqual(font?.isFixedPitch, true)
+        XCTAssertFalse(font?.familyName?.contains("Courier") ?? true, "got \(font?.fontName ?? "nil")")
+    }
+
+    func testApplyFontSettingsScalesFontsAndSpacing() {
+        let style = NSMutableParagraphStyle()
+        style.paragraphSpacing = 10
+        let menloBoldItalic = NSFontManager.shared.convert(
+            NSFont(name: "Menlo", size: 10)!, toHaveTrait: [.boldFontMask, .italicFontMask])
+        let text = NSMutableAttributedString(string: "code", attributes: [.font: menloBoldItalic, .paragraphStyle: style])
+        text.append(NSAttributedString(string: " prose", attributes: [.font: NSFont.systemFont(ofSize: 10)]))
+
+        AppearanceSettings.applyFontSettings(to: text, scale: 1.5, codeFamily: "Monaco")
+
+        let code = text.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+        let prose = text.attribute(.font, at: 6, effectiveRange: nil) as? NSFont
+        XCTAssertEqual(code?.pointSize, 15)
+        XCTAssertEqual(code?.familyName, "Monaco")
+        XCTAssertEqual(prose?.pointSize, 15)
+        XCTAssertNotEqual(prose?.familyName, "Monaco", "proportional text keeps its family")
+        XCTAssertEqual((text.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle)?.paragraphSpacing, 15)
     }
 
     func testMarkdownHorizontalRule() {

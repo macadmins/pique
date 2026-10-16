@@ -104,13 +104,20 @@ class PreviewProvider: NSViewController, QLPreviewingController {
             logger.info("Preview for \(url.lastPathComponent, privacy: .public)")
 
             guard let htmlData = html.data(using: .utf8),
-                  let attrString = NSAttributedString(
+                  let converted = NSAttributedString(
                       html: htmlData,
                       documentAttributes: nil
                   ) else {
                 handler(nil)
                 return
             }
+            // Before the line-number indent below, which measures the (scaled) font.
+            let attrString = NSMutableAttributedString(attributedString: converted)
+            AppearanceSettings.applyFontSettings(
+                to: attrString,
+                scale: AppearanceSettings.fontScale,
+                codeFamily: AppearanceSettings.codeFontFamily
+            )
 
             // When line numbers are on, apply a headIndent to every paragraph so
             // that wrapped lines start at the code column, not at the left margin.

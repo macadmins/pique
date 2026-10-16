@@ -70,6 +70,8 @@ Open the **Pique** app and click the gear icon (⚙️) in the bottom-right corn
 - **Per-Format Appearance** — every format defaults to **System** (follows the macOS appearance). You can override an individual format to always render **Light** or **Dark** — for example, keep shell scripts dark while Markdown stays light.
 - **Show Line Numbers** — a global toggle that adds line numbers to code previews.
 - **Show Final Newline** — marks the file's final newline with a dim `↵`, so you can tell whether a file ends with a newline.
+- **Text Size** — scales all preview text (85 %–200 %), for large displays or easier reading.
+- **Code Font** — the monospaced font for code: Default, SF Mono, Menlo, Monaco or Courier New. Markdown text stays proportional.
 
 Settings are stored in a shared App Group (`group.io.macadmins.pique.apps`), so the Quick Look extension picks up your changes on the next preview.
 
