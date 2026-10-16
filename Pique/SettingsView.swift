@@ -25,6 +25,7 @@ struct SettingsView: View {
 
     @State private var overrides: [String: AppearanceOverride] = [:]
     @State private var showLineNumbers: Bool = false
+    @State private var showFinalNewline: Bool = false
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -47,6 +48,10 @@ struct SettingsView: View {
                     Toggle("Show Line Numbers", isOn: $showLineNumbers)
                         .onChange(of: showLineNumbers) {
                             AppearanceSettings.showLineNumbers = showLineNumbers
+                        }
+                    Toggle("Show Final Newline (↵)", isOn: $showFinalNewline)
+                        .onChange(of: showFinalNewline) {
+                            AppearanceSettings.showFinalNewline = showFinalNewline
                         }
                 }
 
@@ -85,6 +90,7 @@ struct SettingsView: View {
         }
         overrides = loaded
         showLineNumbers = AppearanceSettings.showLineNumbers
+        showFinalNewline = AppearanceSettings.showFinalNewline
     }
 }
 
