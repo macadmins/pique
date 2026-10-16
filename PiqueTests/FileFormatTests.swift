@@ -96,6 +96,7 @@ final class FileFormatTests: XCTestCase {
         }
         XCTAssertEqual(FileFormat(pathExtension: "env"), .shell)
         XCTAssertEqual(FileFormat(pathExtension: "gitignore"), .shell)
+        XCTAssertEqual(FileFormat(pathExtension: "conf"), .shell)
     }
 
     // MARK: - Case insensitivity

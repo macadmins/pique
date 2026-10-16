@@ -192,7 +192,7 @@ class PreviewProvider: NSViewController, QLPreviewingController {
         case "toml", "lock":                                     return "TOML"
         case "xml":                                              return "XML"
         case "mobileconfig", "plist":                            return "mobileconfig"
-        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command", "env", "gitignore": return "Shell"
+        case "sh", "bash", "zsh", "ksh", "dash", "rc", "command", "env", "gitignore", "conf": return "Shell"
         case "ps1", "psm1", "psd1":                              return "PowerShell"
         case "py", "pyw", "pyi":                                 return "Python"
         case "rb":                                               return "Ruby"
