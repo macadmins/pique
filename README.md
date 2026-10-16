@@ -47,9 +47,15 @@ macOS 26.0 or later.
 
 ## Installation
 
-Download and run the pkg installer from [Releases](../../releases).
+Download and run the latest pkg installer from [Releases](../../releases).
 
-Optionally, you can build from source with Xcode:
+For Homebrew users 
+
+```sh
+brew install --cask pique
+```
+
+Optionally, eg if you want to reduce the extensions used, you can build from source with Xcode (TeamID and signing must be changed):
 
 ```sh
 xcodebuild -project Pique.xcodeproj -scheme Pique -config Release
