@@ -12,6 +12,7 @@ struct SettingsView: View {
         ("TOML",         "doc.text",                               .blue),
         ("XML",          "doc.text",                               .green),
         ("mobileconfig", "lock.doc",                               .red),
+        ("AutoPkg",      "shippingbox",                            .brown),
         ("Shell",        "terminal",                               .mint),
         ("PowerShell",   "terminal",                               .blue),
         ("Python",       "chevron.left.forwardslash.chevron.right", .cyan),

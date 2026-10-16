@@ -8,16 +8,21 @@ import SwiftUI
 struct ContentView: View {
     @State private var showSettings = false
 
-    private let formats = [
+    private let formats: [(String, String, Color)] = [
         ("JSON", "doc.text", Color.orange),
         ("YAML", "doc.text", Color.purple),
         ("TOML", "doc.text", Color.blue),
         ("XML", "doc.text", Color.green),
         ("mobileconfig", "lock.doc", Color.red),
         ("VPP token", "key.fill", Color.yellow),
+        ("AutoPkg", "shippingbox", Color.brown),
         ("Shell", "terminal", Color.mint),
+        ("PowerShell", "terminal", Color.blue),
         ("Python", "chevron.left.forwardslash.chevron.right", Color.cyan),
+        ("JavaScript / TS", "chevron.left.forwardslash.chevron.right", Color.yellow),
         ("HCL", "doc.text", Color.indigo),
+        ("Markdown", "doc.richtext", Color.gray),
+        ("Env / Config", "slider.horizontal.3", Color.teal),
     ]
 
     var body: some View {
@@ -34,7 +39,8 @@ struct ContentView: View {
 
             VStack(spacing: 10) {
                 formatChipsRow(formats.prefix(5))
-                formatChipsRow(formats.dropFirst(5))
+                formatChipsRow(formats.dropFirst(5).prefix(4))
+                formatChipsRow(formats.dropFirst(9))
             }
 
             Text("Select a supported file in Finder and press Space to preview.")
